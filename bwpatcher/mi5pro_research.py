@@ -208,6 +208,8 @@ def hook_candidates(app: bytes, blocks: list[dict]) -> list[dict]:
          "R0 liefert Phasenereignis; R4=0 und Klassifikatorzustand müssen erhalten bleiben."),
         ("Klassifikator-Aufruf vor der ursprünglichen Aktionsentscheidung", 0x82FC,
          "bl #0x816260", "R0 liefert klassifiziertes Ereignis; OEM-Langdruck/Reset erhalten."),
+        ("Original-Moduswechsel nach OEM-Doppelklickprüfungen", 0x8550,
+         "bl #0x8160aa", "Originalprüfungen bleiben vorher; danach Istmodus 0x20826d lesen."),
         ("Kopie des Modusbitsatzes in Anzeige-Slot 12", 0x611C,
          "strb.w r0, [r4, #0x60]", "R4=0x2088b0; R0 ist Bitmap, R5 bleibt live."),
         ("Lesen von Slot 12 vor der Anzeigeaggregation", 0xC76C,

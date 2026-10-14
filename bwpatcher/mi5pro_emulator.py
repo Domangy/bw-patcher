@@ -55,10 +55,15 @@ class OriginalAppEmulator:
         self.stubs = {}
         self.failure = None
         self.returned = False
+        self._allow_gpio_output = False
         self.uc.hook_add(UC_HOOK_CODE, self._instruction)
         self.uc.hook_add(UC_HOOK_MEM_WRITE, self._write)
 
     def _instruction(self, uc, address, size, _):
+        if address == APP_BASE + 0x8300 and uc.reg_read(self.r0):
+            self.calls.append(("key_event", uc.reg_read(self.r0)))
+        if address == APP_BASE + 0x8550:
+            self.calls.append(("original_mode_dispatch", 1))
         if address == 0x10000000:
             self.returned = True
             uc.emu_stop()
@@ -86,11 +91,13 @@ class OriginalAppEmulator:
 
     def _write(self, uc, access, address, size, value, _):
         self.writes.append((address, size, value))
-        if not 0x200000 <= address < address + size <= 0x210000:
+        gpio_output = self._allow_gpio_output and address == 0x40001000 and size == 4
+        if not gpio_output and not 0x200000 <= address < address + size <= 0x210000:
             self.failure = f"Nicht erlaubte Firmware-Schreiboperation bei {address:#x}."
             uc.emu_stop()
 
-    def call(self, offset: int, arg: int = 0, *, stubs=None, budget=20000) -> int:
+    def call(self, offset: int, arg: int = 0, *, stubs=None, budget=20000,
+             gpio_output=False) -> int:
         from unicorn import UcError
 
         if type(budget) is not int or not 0 < budget <= 1000000:
@@ -100,6 +107,7 @@ class OriginalAppEmulator:
         self.calls.clear()
         self.writes.clear()
         self.stubs = stubs or {}
+        self._allow_gpio_output = gpio_output
         self.returned = False
         self.failure = None
         self.uc.reg_write(self.sp, 0x20FFF0)
@@ -112,6 +120,7 @@ class OriginalAppEmulator:
             raise AnalysisError(f"Originalausführung abgebrochen: {exc}") from exc
         finally:
             self.stubs = {}
+            self._allow_gpio_output = False
         if self.failure:
             raise AnalysisError(self.failure)
         if not self.returned:
@@ -129,18 +138,43 @@ class OriginalAppEmulator:
         self.uc.mem_write(0x40001050, struct.pack("<I", int(gpio_high) << 29))
         return self.call(0x8260)
 
-    def click_trace(self, count: int) -> list[dict]:
+    def dispatch_tick(self, gpio_high: bool) -> int:
+        """Originalverteiler samt Prüfungen; nur Logging/Speicherauftrag abgefangen."""
+        self.uc.mem_write(0x40001050, struct.pack("<I", int(gpio_high) << 29))
+        self.call(0x82D4, 1, stubs={
+            APP_BASE + 0x100B4: "logger", APP_BASE + 0xA150: "gear_save_request",
+        }, gpio_output=True)
+        events = [v for kind, v in self.calls if kind == "key_event"]
+        if len(events) > 1:
+            raise AnalysisError("Mehr als ein OEM-Ereignis je Timeraufruf.")
+        return events[0] if events else 0
+
+    def click_trace(self, count: int, *, pair_pause_ticks=0, dispatch=False) -> list[dict]:
         if type(count) is not int or not 1 <= count <= 6:
             raise AnalysisError("Demo unterstützt eine bis sechs Tastenbetätigungen.")
-        self.uc.mem_write(self.KEY_STATE, b"\0" * 0x40)
+        if type(pair_pause_ticks) is not int or not 0 <= pair_pause_ticks <= 1000:
+            raise AnalysisError("Begrenzte nichtnegative Paarpause erforderlich.")
+        self.uc.mem_write(self.KEY_STATE + 0xC, b"\0" * 0xA)
+        self.uc.mem_write(self.KEY_STATE + 0x1C, b"\0" * 6)
         events = []
         tick = 0
-        for high, duration in [(v, 8) for _ in range(count) for v in (True, False)] + [(False, 60)]:
+        pattern = []
+        for index in range(count):
+            pattern.extend(((True, 8), (False, 8)))
+            if index % 2 == 1 and index < count - 1:
+                pattern.append((False, pair_pause_ticks))
+        for high, duration in pattern + [(False, 60)]:
             for _ in range(duration):
                 tick += 1
-                event = self.button_tick(high)
+                event = self.dispatch_tick(high) if dispatch else self.button_tick(high)
                 if event:
-                    events.append({"tick": tick, "nominal_ms": tick * 10, "event": event})
+                    row = {"tick": tick, "nominal_ms": tick * 10, "event": event}
+                    if dispatch:
+                        row["mode_after"] = bytes(self.uc.mem_read(self.INFO + 1, 1))[0]
+                        row["mode_cycle_called"] = any(
+                            kind == "original_mode_dispatch" for kind, _ in self.calls
+                        )
+                    events.append(row)
         return events
 
     def display_trace(self, values: list[int]) -> list:
@@ -213,8 +247,24 @@ def main(argv=None):
         ble, mcu = args.ble.read_bytes(), args.mcu.read_bytes()
         if hashlib.sha256(ble).hexdigest() != ORIGINALS["ble"]["sha256"]:
             raise AnalysisError("Nicht das exakt untersuchte BLE-Original.")
-        emu = OriginalAppEmulator(inspect_ble(ble).app)
-        clicks = {str(n): emu.click_trace(n) for n in (1, 2, 5)}
+        app = inspect_ble(ble).app
+        emu = OriginalAppEmulator(app)
+        clicks = {str(n): emu.click_trace(n) for n in (1, 2, 5, 6)}
+        paired = emu.click_trace(6, pair_pause_ticks=60)
+        emu.uc.mem_write(emu.INFO + 1, b"\x03")
+        emu.uc.mem_write(emu.INFO + 0xE, b"\x01")
+        dispatched = emu.click_trace(6, pair_pause_ticks=60, dispatch=True)
+        light = []
+        for _ in range(2):
+            single = emu.click_trace(1, dispatch=True)
+            light.append({"trace": single, "gpio_output": struct.unpack(
+                "<I", bytes(emu.uc.mem_read(0x40001000, 4))
+            )[0]})
+        gate = OriginalAppEmulator(app)
+        gate.uc.mem_write(gate.INFO + 1, b"\x03")
+        gate.uc.mem_write(gate.INFO + 0xE, b"\x01")
+        gate.uc.mem_write(gate.INFO + 0x10, b"\x01")
+        gated = gate.click_trace(6, pair_pause_ticks=60, dispatch=True)
         display = {}
         for mask in (1, 2, 4, 7):
             values = [0] * 21
@@ -230,7 +280,12 @@ def main(argv=None):
         parser.exit(1, f"Analyse abgebrochen: {exc}\n")
     print(json.dumps({
         "status": "Originalroutinen mit emulierter Peripherie, kein Hardwaretest",
-        "ssm_patch_available": False, "clicks": clicks, "display": display, "uart": uart,
+        "ssm_patch_available": False, "clicks": clicks,
+        "paired_doubles_60_extra_low_ticks": paired,
+        "original_dispatcher_paired_doubles": dispatched,
+        "original_single_light": light, "original_mode_gate": gated,
+        "dispatcher_stubs": ["logger", "gear_save_request"],
+        "display": display, "uart": uart,
     }, indent=2, ensure_ascii=False))
     return 0
 

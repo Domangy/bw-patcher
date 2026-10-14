@@ -3,6 +3,11 @@
 Stand: 14. Oktober 2026. Fortsetzung von Draft-PR #1 auf Basis von
 `b2965be621fa5e8fe32a1748313fbb37158373e7`.
 
+Die ursprünglichen 55 Testergebnisse unten dokumentieren den Stand `6062bd2`.
+Die aktuelle Aktivierung verwendet drei getrennte OEM-Doppelklicks; neue
+Verteiler-/Lichtnachweise und der vollständige Testlauf stehen in
+[DOPPELKLICK.md](DOPPELKLICK.md). Container- und Adressbefunde bleiben gültig.
+
 **Neue Nachweise:** Das komprimierte BLE-APP ist vollständig lesbar. Der
 ursprüngliche GPIO-/Tastenpfad und die getrennte Display-Bitmap sind lokalisiert.
 Ausgewählte Originalroutinen wurden mit Unicorn ausgeführt; der originale
@@ -245,11 +250,12 @@ Block. **Keine Stelle ist bereits für eine Codeinjektion freigegeben.**
 | APP-Offset / Laufzeitadresse | Originalinstruktion / Zweck | Lokale Einschränkung |
 | --- | --- | --- |
 | `0x8264` / `0x00816264` | `BL` nach APP+`0x81ce`, vor dem Phasenautomaten | R0 liefert Phasenereignis; R4=0 und OEM-Zählerzustand bleiben erforderlich. Nur dieses Ereignis zu beobachten verhindert keine frühzeitigen Doppelklickaktionen. |
-| `0x82fc` / `0x008162fc` | `BL` nach APP+`0x8260`, Klassifikator vor Aktionsverteiler | R0 ist das fertige Ereignis. Ein Ersatz muss Rohabtastung, OEM-Langdruck, Reset, Zustandsbesitz und Verzögerung normaler Klickaktionen gemeinsam regeln. |
+| `0x82fc` / `0x008162fc` | `BL` nach APP+`0x8260`, Klassifikator vor Aktionsverteiler | R0 ist das fertige Ereignis. Für die neue Variante den Originalklassifikator erhalten und andere OEM-Ereignisse zur Unterbrechung der Zählung beobachten; kein neuer Rohparser. |
+| `0x8550` / `0x00816550` | `BL` nach APP+`0x80aa`, ursprünglicher Moduswechsel nach OEM-Prüfungen | Neue Doppelklick-Variante: Originalaktion erhalten, danach lokalen Istmodus lesen. SSM-Aktivierung braucht zusätzlich bestätigten Motorzustand; keine Injektionsfreigabe. |
 | `0x611c` / `0x0081411c` | `STRB.W r0,[r4,#0x60]`, Bitmapkopie | R4 ist Stagingbasis; R5 bleibt live. Slotstatus und spätere Überschreibungen beachten. |
 | `0xc76c` / `0x0081a76c` | `LDRB.W r0,[r4,#0x60]`, spätes Anzeige-Overlay | R0 geht in R5 ein; R1 und R4–R11 sind live. Das ist keine normale Funktionsgrenze; ein BL ohne Sicherung würde Live-Register und LR gefährden. |
 
-Die Fortsetzungsadresse ist jeweils die Laufzeitadresse +4. Die beiden
+Die Fortsetzungsadresse ist jeweils die Laufzeitadresse +4. Die drei
 Tastenstellen liegen im komprimierten Block bei Containeroffset `0xf5c7`,
 die Kopierstelle im Block `0xcbb5`, das späte Overlay im Block `0x1195a`.
 Es gibt keinen direkten OTA-Byteoffset für eine entpackte Instruktion.
@@ -304,7 +310,7 @@ python -m bwpatcher.mi5pro_emulator --ble /lokal/originale/ble_2.7.0_0015.bin --
 MI5PRO_FIRMWARE_DIR=/lokal/originale python -m pytest tests/test_mi5pro_research.py tests/test_ssm_firmware.py::test_downloaded_original_identity tests/test_ssm_firmware.py::test_unknown_files_are_never_whitelisted -q
 ```
 
-Ergebnis dieser Fortsetzung: **55 bestanden, 0 fehlgeschlagen, 0 übersprungen**
+Historisches Ergebnis dieser Fortsetzung (vor Ereignisumstellung): **55 bestanden, 0 fehlgeschlagen, 0 übersprungen**
 (51 neue Fälle plus vier gezielt wiederholte Audit-Identitätsfälle).
 Ohne Originaldateien bestehen die 24 neuen synthetischen Fälle; 27 neue
 Originalprüfungen werden ausdrücklich übersprungen.
@@ -325,7 +331,7 @@ Firmware-Codeabdeckungsangabe. Es gibt weiterhin null Hardwaretests.
 | Ursprünglicher Tastenpfad | Lokalisiert und isoliert mit Originalcode ausgeführt; Präfixkonflikt nachgewiesen. OEM-/SSM-Integration noch zu entwickeln. |
 | Drei Modussymbole | Unabhängige Softwarebits bis zur Byte-Ausgabe belegt. Physische Symbolzuordnung und gemeinsames Dauerleuchten ungemessen. |
 | Interner Modustransport | Builder und MCU-Feldkonsument zusammen geprüft. Gesamter Empfang, Gegenrichtung, Zeitverhalten und zusätzlicher SSM-Zustand offen. |
-| Geeignete Hook-Semantik | Vier vollständige Instruktionen mit lokalen Verträgen identifiziert. Kein sicherer Code-/RAM-Platz und kein injizierter Hook nachgewiesen. |
+| Geeignete Hook-Semantik | Inzwischen fünf vollständige Instruktionen mit lokalen Verträgen identifiziert (siehe DOPPELKLICK.md). Kein sicherer Code-/RAM-Platz und kein injizierter Hook nachgewiesen. |
 
 Weitere **Softwarearbeit** kann Kontrollfluss-/Speicherbelegung, vollständige
 Protokollzustände, Region-/NVM-Lesen und einen integrierten Adapter untersuchen.

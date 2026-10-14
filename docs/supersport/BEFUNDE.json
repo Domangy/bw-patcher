@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "date": "2026-10-14",
   "scope": "Metadaten und isolierte Originalcode-Ausführung; keine Firmwareausgabe/Hardwarefreigabe",
   "originals": {
@@ -189,6 +189,24 @@
         ]
       },
       {
+        "name": "Original-Moduswechsel nach OEM-Doppelklickprüfungen",
+        "app_offset": 34128,
+        "address": 8480080,
+        "instruction": "bl #0x8160aa",
+        "branch_target": 8478890,
+        "continuation_address": 8480084,
+        "local_contract": "Originalprüfungen bleiben vorher; danach Istmodus 0x20826d lesen.",
+        "compressed_block_container_offset": 62919,
+        "direct_ota_byte_offset_exists": false,
+        "approved_for_injection": false,
+        "missing": [
+          "Reservierter ausführbarer Speicher und private RAM-Belegung",
+          "Vollständiger Aufruf-/Interrupt-/Timingvertrag auf Hardware",
+          "Originale Integritäts- und Updateanforderungen unverändert erfüllen",
+          "Kohärente MCU/BLE-Zustandsübertragung und Fehlerpriorität"
+        ]
+      },
+      {
         "name": "Kopie des Modusbitsatzes in Anzeige-Slot 12",
         "app_offset": 24860,
         "address": 8470812,
@@ -263,8 +281,123 @@
           "nominal_ms": 1230,
           "event": 1
         }
+      ],
+      "6": [
+        {
+          "tick": 25,
+          "nominal_ms": 250,
+          "event": 2
+        },
+        {
+          "tick": 57,
+          "nominal_ms": 570,
+          "event": 2
+        },
+        {
+          "tick": 73,
+          "nominal_ms": 730,
+          "event": 5
+        },
+        {
+          "tick": 89,
+          "nominal_ms": 890,
+          "event": 2
+        }
       ]
     },
+    "paired_doubles_60_extra_low_ticks": [
+      {
+        "tick": 25,
+        "nominal_ms": 250,
+        "event": 2
+      },
+      {
+        "tick": 117,
+        "nominal_ms": 1170,
+        "event": 2
+      },
+      {
+        "tick": 209,
+        "nominal_ms": 2090,
+        "event": 2
+      }
+    ],
+    "original_dispatcher_paired_doubles": [
+      {
+        "tick": 25,
+        "nominal_ms": 250,
+        "event": 2,
+        "mode_after": 11,
+        "mode_cycle_called": true
+      },
+      {
+        "tick": 117,
+        "nominal_ms": 1170,
+        "event": 2,
+        "mode_after": 2,
+        "mode_cycle_called": true
+      },
+      {
+        "tick": 209,
+        "nominal_ms": 2090,
+        "event": 2,
+        "mode_after": 3,
+        "mode_cycle_called": true
+      }
+    ],
+    "original_single_light": [
+      {
+        "trace": [
+          {
+            "tick": 59,
+            "nominal_ms": 590,
+            "event": 1,
+            "mode_after": 3,
+            "mode_cycle_called": false
+          }
+        ],
+        "gpio_output": 64
+      },
+      {
+        "trace": [
+          {
+            "tick": 59,
+            "nominal_ms": 590,
+            "event": 1,
+            "mode_after": 3,
+            "mode_cycle_called": false
+          }
+        ],
+        "gpio_output": 0
+      }
+    ],
+    "original_mode_gate": [
+      {
+        "tick": 25,
+        "nominal_ms": 250,
+        "event": 2,
+        "mode_after": 3,
+        "mode_cycle_called": false
+      },
+      {
+        "tick": 117,
+        "nominal_ms": 1170,
+        "event": 2,
+        "mode_after": 3,
+        "mode_cycle_called": false
+      },
+      {
+        "tick": 209,
+        "nominal_ms": 2090,
+        "event": 2,
+        "mode_after": 3,
+        "mode_cycle_called": false
+      }
+    ],
+    "dispatcher_stubs": [
+      "logger",
+      "gear_save_request"
+    ],
     "display": {
       "1": [
         [
@@ -572,15 +705,42 @@
     ]
   },
   "verification": {
-    "targeted_passed": 55,
-    "targeted_failed": 0,
-    "targeted_skipped": 0,
-    "new_cases": 51,
-    "affected_existing_cases": 4,
-    "without_originals_passed": 24,
-    "without_originals_skipped": 27,
+    "full_suite": {
+      "tests": 219,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "without_originals": {
+      "tests": 219,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 47
+    },
+    "cases": {
+      "event_simulation": 107,
+      "original_research": 65,
+      "firmware_and_export": 44,
+      "ui_and_demo": 3
+    },
     "hardware_tests": 0,
-    "unicorn_version": "2.1.4"
+    "unicorn_version": "2.1.4",
+    "original_files_unchanged": true
   },
-  "ssm_patch_available": false
+  "ssm_patch_available": false,
+  "activation_policy": {
+    "oem_event": 2,
+    "required_doubles": 3,
+    "raw_parser_reimplemented": false,
+    "third_actual_sport_ack_required": true,
+    "timing_ms": {
+      "double_min_ms": 600,
+      "double_gap_ms": 1600,
+      "sequence_ms": 4000,
+      "confirm_ms": 500,
+      "standstill_ms": 500
+    },
+    "timing_status": "Entwurfswerte, Hardware ungeprüft",
+    "normal_limit": "Unveränderten Original-/Regionswert verwenden, Zielgerät laut Auftrag 20 km/h"
+  }
 }

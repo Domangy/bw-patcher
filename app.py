@@ -355,12 +355,13 @@ if scooter_model == "mi5pro":
         st.checkbox("Enable SuperSport Mode (SSM)", value=False, disabled=True)
         st.caption(SSM_STATUS)
         st.write(
-            "Ziel: 30 km/h · Aktivierung: 5 Tastendrücke · Rückkehr: 2 Tastendrücke · "
+            "Ziel: 30 km/h · Aktivierung: 3 getrennte Doppelklicks · Rückkehr: 1 Doppelklick · "
             "Anzeige: alle 3 Modussymbole."
         )
         st.info(
-            "Nur die Offline-Zustandsmaschine ist implementiert. Tasten- und "
-            "Displayanbindung sind nicht nachgewiesen. Auch der experimentelle "
+            "Die Simulation zählt OEM-Doppelklickereignisse und verlangt danach "
+            "den bestätigten Sportmodus. Firmwareintegration und elektrische "
+            "Displaywirkung sind ungeprüft. Auch der experimentelle "
             "Modus gibt keinen SSM-Firmwareexport frei. Bestehende Speed-Patches "
             "erzeugen keinen zusätzlichen Fahrmodus."
         )

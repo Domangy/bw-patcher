@@ -33,6 +33,7 @@ def test_mi5pro_ui_keeps_ssm_disabled(monkeypatch, experimental):
     assert not app.exception
     ssm = next(c for c in app.checkbox if c.label == "Enable SuperSport Mode (SSM)")
     assert ssm.disabled and not ssm.value
+    assert any('3 getrennte Doppelklicks' in item.value for item in app.markdown)
     assert not any(b.label == "Apply patches" for b in app.button)
     # Bestehende Mi5Pro-Optionen bleiben zugänglich.
     assert any(c.label == "Sport (SLS)" and not c.disabled for c in app.checkbox)
@@ -40,10 +41,13 @@ def test_mi5pro_ui_keeps_ssm_disabled(monkeypatch, experimental):
 
 def test_demonstration_exercises_activation_deferred_exit_and_restart():
     trace = demonstration()
-    assert [row.get("actions") for row in trace[:-1]] == [
-        ["ssm_activate"], ["ssm_exit_at_standstill"], ["ssm_deactivate"], ["ssm_activate"],
-    ]
-    assert trace[1]["speed_override_kmh"] == 30
-    assert trace[0]["mode_icons"] == ["drive", "sport", "walk"]
+    actions = [row['actions'] for row in trace[:-1] if row.get('actions')]
+    activation = [["original_next_mode"]] * 3 + [["ssm_activate"]]
+    assert actions == activation + [["ssm_exit_at_standstill"], ["ssm_deactivate"]] + activation
+    confirmed = [row['confirmed_mode'] for row in trace if row.get('ack_source')]
+    assert confirmed == ['walk', 'drive', 'sport'] * 2
+    active = next(row for row in trace if row.get('actions') == ['ssm_activate'])
+    assert active['mode_icons'] == ["drive", "sport", "walk"]
+    assert active['confirmed_mode'] == 'sport'
     assert trace[-1]["state"] == "normal"
     assert trace[-1]["speed_override_kmh"] is None

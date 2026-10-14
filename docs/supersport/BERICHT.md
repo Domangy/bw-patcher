@@ -4,6 +4,11 @@ Stand: 14. Oktober 2026. Untersuchte Ausgangscodebasis: `95a8f339787a1fb6486554d
 Zielgerät laut Auftrag: `xiaomi.scooter.5pro`, Schweizer Ausführung,
 MCU `0007`, BLE `2.7.0_0015`.
 
+**Aktuelle Aktivierung:** drei getrennte OEM-Doppelklicks mit normalen
+Moduswechseln; erst nach bestätigtem dritten Abschluss im Sportmodus SSM.
+Die Fünffachklick-Aktivierung ist ersetzt. Einzelheiten und Originalcode-Traces
+stehen in [DOPPELKLICK.md](DOPPELKLICK.md).
+
 **Entwicklungsstufe 3 — Simulation erfolgreich.** Die Zustandsmaschine,
 schreibgeschützte Originalprüfung, Export-Sperre, Offline-Demo und Tests sind
 implementiert. In der [Fortsetzung der Originalanalyse](FORTSETZUNG.md) sind
@@ -168,8 +173,8 @@ ersetzt den früheren offenen Stand dieses Abschnitts:
   MCU-Feldkonsument bei Dateioffset `0x203b2` übernimmt daraus den Modus.
   Neun Kombinationen wurden über beide Originale geprüft. Das ist kein
   vollständiger UART-/RTOS-/Hardwaretest und noch kein SSM-Kommunikationsvertrag.
-- Vier vollständige Thumb-Instruktionen sind als semantische Hook-Kandidaten
-  belegt: APP+`0x8264`, `0x82fc`, `0x611c`, `0xc76c`. Sie sind **nicht zur
+- Fünf vollständige Thumb-Instruktionen sind als semantische Hook-Kandidaten
+  belegt: APP+`0x8264`, `0x82fc`, `0x8550`, `0x611c`, `0xc76c`. Sie sind **nicht zur
   Injektion freigegeben**. APP-Offsets sind keine direkten OTA-Dateioffsets.
 
 Der aktuelle Befund erlaubt weiterhin **keinen belastbaren SSM-Firmware-Patch**.
@@ -184,7 +189,7 @@ Es wurden keine Sprünge oder geratenen Befehle injiziert.
 
 | Datei | Änderung |
 | --- | --- |
-| `bwpatcher/ssm.py` | Unabhängige Referenzsimulation: `Timing`, `Inputs`, `ButtonRecognizer`, `SuperSportSimulation`, Zustände und Aktionen |
+| `bwpatcher/ssm.py` | OEM-Ereignissimulation: `Timing`, `Inputs`, `ModeRequest`, `SuperSportSimulation`; kein neuer Roh-Tastenparser |
 | `bwpatcher/ssm_firmware.py` | Schreibgeschützter Audit, strikte Originalidentifikation, begrenzte CRC-Bereiche und reproduzierbare Disassemblierung |
 | `bwpatcher/mi5pro_research.py` | Begrenzte Bee2-/LZMA-Analyse, Hashes, Codefenster und nicht freigegebene Hook-Kandidaten |
 | `bwpatcher/mi5pro_emulator.py` | Kontrollierte Ausführung ausgewählter Originalroutinen mit emulierter Peripherie |
@@ -193,7 +198,7 @@ Es wurden keine Sprünge oder geratenen Befehle injiziert.
 | `bwpatcher/utils.py` | SSM-Anforderungen vor erster Patchaktion abbrechen, auch gemischt mit vorhandenen Patches |
 | `bwpatcher/__main__.py` | SSM-Fehler beendet CLI mit Code 1, ohne Ausgabedatei anzulegen/zu überschreiben; Hilfe ergänzt |
 | `app.py` | Mi5Pro-Statusanzeige und standardmässig deaktivierte, gesperrte SSM-Checkbox |
-| `tests/test_ssm.py` | Pegel-, Gesten-, Zustands-, Display- und Grenzfalltests |
+| `tests/test_ssm.py` | OEM-Ereignis-, Modusquittungs-, Zustands-, Display- und Grenzfalltests |
 | `tests/test_ssm_firmware.py` | Synthetische Struktur-/Exporttests und optionale Original-Regressionsprüfungen |
 | `tests/test_ssm_ui.py` | Streamlit-Prüfungen und Demoablauf |
 | `pyproject.toml` | pytest-Importpfad und optionale Forschungsgruppe mit Unicorn ergänzt |
@@ -204,68 +209,48 @@ Die bestehenden Mi5Pro-Patchmethoden, Stromparameter und Checksum-Algorithmen
 wurden nicht umgeschrieben. Das Modell liegt ausserhalb des dynamisch erfassten
 Modulverzeichnisses und wird nicht versehentlich als Scooter-Modell angeboten.
 
-### Gestenerkennung
+### Drei getrennte OEM-Doppelklicks
 
-Entwurfswerte, noch nicht am Dashboard kalibriert:
+Die [aktuelle Ereignisspezifikation](DOPPELKLICK.md) ersetzt die frühere
+Fünffachklick- und Rohpegel-Auswertung vollständig. Die Originalausführung
+zeigt bei schnellen sechs Tastendrücken `2,2,5,2`, bei ausreichend getrennten
+Paaren dagegen ausschliesslich `2,2,2`. Das OEM-Fünferereignis wird erhalten
+und unterbricht SSM-Folgen. Es wird kein zweiter Roh-Tastenparser implementiert.
 
-| Parameter | Wert |
-| --- | ---: |
-| Entprellung je Flanke | 30 ms |
-| Ruhefenster nach dem letzten entprellten Loslassen | 350 ms |
-| Maximale Sequenzdauer | 1800 ms |
-| Langdruckschwelle | 800 ms |
-| Bestätigter Stillstand vor Aktivierung / vorgemerkter Rückkehr | 500 ms |
+Die ersten beiden und der dritte normale Doppelklick dürfen die ursprüngliche
+Modusaktion ausführen. Im Originalverteiler wurde damit der volle Zyklus
+`Sport -> Fussgänger -> Drive -> Sport` geprüft. Nach jeder Aktion verlangt
+`ModeRequest` ein passendes Abschlussticket und einen tatsächlichen Istmodus.
+Nur die bestätigte dritte Aktion im Sportmodus kann aktivieren; ein bereits
+zuvor angezeigtes Sport genügt nicht. Die aktuellen Grenzen sind 600–1600 ms
+zwischen Doppelereignissen, 4000 ms Gesamtfenster, 500 ms Abschlussfrist und
+mindestens 500 ms bestätigter Stillstand. Das sind Entwurfswerte, keine
+Hardwaremessungen. Normale OEM-Aktionen werden nicht bis zum dritten Ereignis
+zurückgehalten.
 
-Erst die Ruhephase entscheidet zwischen einem, zwei und fünf vollständigen
-Klicks. Drei oder vier werden verworfen. Ein sechster Klick vor Fristablauf
-verwirft die gesamte Folge; es gibt deshalb auch unmittelbar beim fünften
-Loslassen noch keine Aktivierung. Ein bereits begonnener neuer Druck wird
-während seiner Entprellung berücksichtigt. Eine neue rohe Druckflanke exakt
-an der Frist beginnt eine neue Folge.
+Aktivierung bleibt standardmässig deaktiviert. Bei eingeschalteter Simulation
+müssen während der Folge Betrieb, bekannte gültige Telemetrie, Geschwindigkeit
+exakt null, losgelassenes Gas, Fehlerfreiheit und entsperrter Zustand vorliegen.
+Reservierte OEM-Kontexte müssen ausdrücklich ausgeschlossen sein. Andere
+Tastenereignisse, unbekannte Werte, verlorene Freigaben, Timeout, fremde Tickets
+und konkurrierende Dashboardereignisse verwerfen die Aktivierungsfolge.
+Single-/Long-/Fünfer- und übrige OEM-Ereignisse werden unverändert delegiert.
 
-Das kostet bei Einzel- und Doppelklick grundsätzlich bis zu 350 ms zusätzliche
-Wartezeit nach dem entprellten Loslassen. Ohne vorzeitige Nebenwirkungen lassen
-sich identische Präfixe nicht früher eindeutig unterscheiden. Die normale
-Bedienlatenz des echten Dashboards wurde nicht gemessen.
-
-Langdruck verwirft laufende Klickfolgen und liefert einmal die Aktion zur
-Original-Langdruckverarbeitung. Er schaltet die simulierte Hardware nicht selbst
-aus. Moduswechsel bleiben ebenfalls Originalaktionen: Erst eine neue atomare
-Eingabe bestätigt den tatsächlichen Modus. `next_stock_mode()` beschreibt nur
-die im Auftrag genannte abstrakte Reihenfolge und keine numerischen MCU-Codes.
-
-Aktivierung ist standardmässig deaktiviert. Bei ausdrücklich aktivierter
-Simulation muss die gesamte Folge im normalen Sportmodus beginnen und gültig
-bleiben. Voraussetzungen sind Betrieb, fehlerfreie bekannte Telemetrie,
-entsperrter Scooter, exakt gemessene Geschwindigkeit null und losgelassener
-Gashebel. Unbekannte Werte geben keine Aktivierung frei. Verlässt die Folge
-diese Voraussetzungen, kann sie sich nicht unterwegs erneut scharfstellen.
-
-Dashboardereignisse und widersprüchliche Tastenpegel am selben Zeitstempel
-verwerfen die laufende Folge. Der spätere Adapter muss konkurrierende Ereignisse
-vor der Auswertung in einem konsistenten Snapshot zusammenführen. Die Python-
-Klassen sind keine interruptfähige Embedded-Implementierung. Abtastung und
-Telemetriefrische müssen vom Aufrufer garantiert werden; in Tests und Demo
-wird alle 10 ms abgetastet. Nicht beobachtete Flanken lassen sich nicht rekonstruieren.
-Zeit läuft monoton; ein Uhrreset verlangt `reset()`, ein MCU-Timerüberlauf einen
-gesonderten Portierungsvertrag.
-
-Xiaomi dokumentiert bereits Gashebel plus fünf Tastendrücke zum Zurücksetzen
-der Verbindung sowie eine andere gehaltene Kombination zum Werksreset.
-Das Modell verhindert die SSM-Aktivierung mit betätigtem Gashebel. Es
-implementiert die Hersteller-Resetlogik nicht. Ein echter Adapter muss solche
-Originalkombinationen vor der SSM-Klassifizierung unverändert an ihren
-Originalpfad geben; die nun lokalisierten Kandidaten sind dafür noch nicht
-als integrierter Adapter umgesetzt oder geprüft.
+Die zusätzlichen Kontext-/Quittungsfelder sind ein Vertrag für einen späteren
+Adapter. Der vollständige reale Reset-, Tastenbeginn-, Scheduler- und
+Motorcontroller-Rückmeldepfad ist damit nicht implementiert. Die Demo kennzeichnet
+simulierte Quittungen, die erweiterten Originaltests nutzen ausgeführte
+Original-Moduswechsel, BLE-Framebuilder und MCU-Feldkonsument. Beide bleiben
+Offline-Prüfungen ohne angeschlossenen Scooter.
 
 ### Zustand, Rückkehr und Anzeige
 
 ```mermaid
 stateDiagram-v2
     [*] --> Normal
-    Normal --> SuperSport: Genau 5 Klicks, Sport, Stillstand, alle Freigaben
-    SuperSport --> Normal: Genau 2 Klicks im bestätigten Stillstand
-    SuperSport --> RueckkehrVorgemerkt: 2 Klicks während Fahrt oder Sicherheitsereignis
+    Normal --> SuperSport: 3 OEM-Doppelklicks, dritter Abschluss Sport, Stillstand
+    SuperSport --> Normal: 1 Doppelklick im bestätigten Stillstand
+    SuperSport --> RueckkehrVorgemerkt: Doppelklick während Fahrt oder Sicherheitsereignis
     RueckkehrVorgemerkt --> Normal: Bestätigter Stillstand
     SuperSport --> Normal: Ausschalten oder reset
     RueckkehrVorgemerkt --> Normal: Ausschalten oder reset
@@ -283,7 +268,9 @@ Fehler oder Telemetrieausfall verriegeln ebenfalls diese Rückkehrabsicht.
 haben.** Ein vorhandener 30-km/h-Modellwert ist keine Erlaubnis, eine
 Originalfehlerreaktion zu überstimmen. Dies muss beim späteren Port ausdrücklich
 nachgewiesen werden. Nach `reset()` oder beobachtetem Ausschalten ist SSM aus;
-es gibt keinerlei persistierten Aktivierungszustand.
+es gibt keinerlei persistierten Aktivierungszustand. Sollte der tatsächliche
+Modus unerwartet nicht Sport sein, bleibt die Rückkehr bis zum bestätigten
+Sportzustand vorgemerkt; `RESTORE_SPORT` ist nur eine logische Adapteranforderung.
 
 `display(frame)` kopiert nur den abstrakten Schlüssel `mode_icons`. Im normalen
 Betrieb enthält er das aktuelle Modussymbol, während SSM und vorgemerkter
@@ -321,56 +308,39 @@ wie `ssm` oder `sls=30,ssm,chk` wird vollständig vor der Patchausführung abgew
 
 ## C. Testergebnisse
 
-**Aktuelle Fortsetzung:** 55 gezielte Prüfungen bestanden (51 neue und vier vom
-Audit betroffene bisherige Fälle), keine fehlgeschlagen oder übersprungen.
-Details und Reproduktion stehen in [FORTSETZUNG.md](FORTSETZUNG.md#8-werkzeuge-prüfungen-und-verbleibende-arbeit).
-Die folgenden 114 beziehungsweise 108 Tests dokumentieren den vorherigen
-Simulationsstand. Sie wurden nicht vollständig erneut ausgeführt; die
-Abdeckungswerte gelten ausschliesslich für diesen früheren Stand.
-
-Ausgeführt mit Python 3.12, Keystone 0.9.2, Capstone 4.0.2 und pytest 8;
-Streamlit wurde mit `AppTest` ohne angeschlossene Hardware geprüft.
-Die gemessene Anweisungsabdeckung der drei neuen SSM-Pythonmodule beträgt
-zusammen 95 %, bei der Zustandsmaschine 98 %. Das ist keine Abdeckung der
-Xiaomi-Firmware. Capstone 4.0.2 meldet eine bestehende `pkg_resources`-
-Abkündigungswarnung; der geprüfte Lauf verwendet die im Projekt zugelassene
-Setuptools-Version 80.9.0.
+Die vollständige aktuelle Suite wurde mit beiden Originaldateien ausgeführt:
 
 | Testumfang | Ergebnis |
 | --- | --- |
-| Vollständige Suite mit lokalem Originalverzeichnis | 114 bestanden, 0 fehlgeschlagen, 0 übersprungen |
-| Öffentlicher Lauf ohne Originaldateien | 108 bestanden, 6 Originaltests übersprungen |
-| Echte Hardwaretests | 0, mangels angeschlossener und freigegebener Testhardware nicht ausführbar |
+| Alle Tests, lokale Originale und optionale Forschungsabhängigkeiten | **219 bestanden, 0 fehlgeschlagen, 0 übersprungen** |
+| Alle Tests ohne proprietäre Originaldateien | **172 bestanden, 47 Originalfälle übersprungen** |
+| Hardwaretests | 0 |
 
-Abgedeckt sind Einzel-, Doppel-, Fünffach-, Vierfach- und Sechsfachklick,
-Entprellung, zu schnelle/zu langsame Eingaben, offene/überlange Folgen,
-Langdruck, exakte Zeitgrenze, gleichzeitige/widersprüchliche Ereignisse und
-verlorene Freigaben. Hinzu kommen alle drei normalen Moduswechsel, Aktivierung,
-Rückkehr im Stillstand, vorgemerkte Rückkehr während Bewegung, Fehlerfälle,
-Neustart sowie 6000 deterministische Zufallssamples mit Bewegung ohne Aktivierung.
-Zwei zusätzliche Übergangstests stellen sicher, dass eine noch während SSM
-begonnene Klickfolge nach der vorgemerkten Rückkehr weder einen weiteren
-Originalmoduswechsel noch eine erneute Aktivierung auslöst.
+Enthalten sind 107 Ereignis-/Zustandsfälle, 65 Container-/Originalcodefälle,
+44 Audit-/Exportsperrfälle und drei GUI-/Demofälle. Python 3.12, Unicorn 2.1.4,
+Capstone 4.0.2, pytest 8 und Streamlit AppTest. Die bekannte Capstone-
+`pkg_resources`-Abkündigungswarnung bleibt; Setuptools ist 80.9.0.
 
-Displaytests prüfen die abstrakten Symbole und unveränderte übrige Felder.
-Die Firmwaretests prüfen ganze Hashes, manipulierte/trunkierte Dateien,
-unzulässige CRC-Bereiche, CRCs mit bekanntem Testvektor, mehrdeutige Marker,
-SSM-Exportverweigerung vor jeglicher Patcherinstanziierung und vorhandene
-CLI-Ausgabedateien, die bei Fehlern unverändert bleiben müssen.
+Geprüft sind normale Einzel-/Doppel-/Langdruckübergaben, weitergereichte OEM-
+Fünfer-/Resetereignisse, Mindest-/Maximal-/Gesamtfristen, dritte Modusquittung,
+fehlerhafte/veraltete Tickets, verlorene Freigaben, ursprüngliche Moduswechsel,
+Deaktivierung, vorgemerkte Rückkehr, Neustart, Displayfelder und 6000
+Zufallssamples mit Bewegung ohne SSM-Aktivierung. Die Originalprüfungen umfassen
+LZMA-/Hash-/Grenzfälle, tatsächliche Klassifikator- und Verteilerfunktionen,
+Licht-GPIO im emulierten Speicher, ursprüngliches Modussperrbyte sowie
+BLE-/MCU-Feldvergleiche. Einzelheiten stehen in [DOPPELKLICK.md](DOPPELKLICK.md).
 
-Die sechs optionalen Originaltests identifizieren beide Downloads, prüfen den
-identischen Checksum-Lauf, reproduzieren Literalpoolreferenzen und testen
-die bestehenden SLS-/SLD-Patches ausschliesslich im RAM. Dabei werden Länge,
-CRCs und unveränderte Bytes ausserhalb der vorher beobachteten Patchstellen
-geprüft. Diese Regressionstests sind **keine Sicherheitsfreigabe** der alten
-Speed-Patches. Es gab im Ausgangsrepository keine eingecheckte Testsuite;
-Hardwareverhalten und alle übrigen Modell-/Firmwarekombinationen wurden nicht
-vollständig regressionsgeprüft.
+Die sechs bisherigen Originaltests inklusive rein im RAM geprüfter alter
+SLS-/SLD-Patches und Checksum-Behandlung sind im Gesamtlauf enthalten. Sie
+bedeuten weiterhin keine Sicherheitsfreigabe dieser alten Speed-Patches.
+CLI-/GUI- und Mischpatchtests bestätigen die unveränderte SSM-Exportsperre.
 
-Es wurden keine SSM-Einsprünge, keine SSM-Firmwareausführung, keine reale
-Segmentanzeige, keine Fahrdynamik und keine realen Schutzreaktionen geprüft.
-Die erfolgreiche Simulation darf deshalb nicht als Entwicklungsstufe 4
-„Firmware-Patch offline validiert“ bezeichnet werden.
+Die früheren Ergebnisse 114/108 und der gezielte Fortsetzungslauf mit 55 Fällen
+sind historische Nachweise vorheriger Stände. Die dort erhobenen Python-
+Abdeckungswerte gelten nicht für die aktuelle Ereignissimulation. Es wurden
+keine integrierten SSM-Einsprünge, keine elektrische Segmentanzeige, keine
+Fahrdynamik und keine realen Schutzreaktionen geprüft. Entwicklungsstufe 4
+„Firmware-Patch offline validiert“ bleibt unerreicht.
 
 ## D. Sicherheits- und Kompatibilitätsprüfung
 
@@ -407,8 +377,9 @@ Noch softwareseitig offen:
 
 1. Vollständige Referenz-/Kontrollflussanalyse, Flash-/RAM-Reservierung,
    Initialisierung, Live-Register und Kontextverträge der Hook-Kandidaten.
-2. Integration einer Klassifikation vor der OEM-Aktionsentscheidung bei Erhalt
-   von Langdruck, Reset und sonstigen Originalkombinationen.
+2. Integration eines Zählers vorhandener OEM-Doppelereignisse und bestätigter
+   Original-Modusabschlüsse bei Erhalt von Langdruck, Reset und sonstigen
+   Originalkombinationen. Ein neuer Rohklassifikator ist nicht mehr nötig.
 3. Vollständiger Kommunikationsvertrag für SSM zwischen BLE und MCU,
    einschliesslich Fehlern, Quittierung, Telemetriefrische und Neustart.
 4. Normalwert aus Region/NVM erhalten und sichere Umschaltstelle ohne Entfernung

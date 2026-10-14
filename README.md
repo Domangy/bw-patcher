@@ -88,11 +88,15 @@ Das BLE-APP ist entpackt; originale Tasten-, Anzeige- und Modustransportroutinen
 wurden offline ausgeführt. Drei unabhängige Anzeige-Bits sind bis zur Byte-Ausgabe
 belegt. Ihre elektrische Wirkung und ein integrierter SSM-Patch bleiben ungeprüft.
 Die SSM-Option bleibt gesperrt, auch mit `--experimental`.
-Bestehende Speed-Patches erzeugen keinen zusätzlichen Fahrmodus.
+Neue Aktivierung: drei getrennte OEM-Doppelklicks, mit normalen Moduswechseln
+und bestätigtem Sportmodus nach dem dritten Wechsel. Einzelklick/Licht bleiben
+OEM-Aktionen; ein Doppelklick beendet SSM im Stillstand. Bestehende Speed-Patches
+erzeugen keinen zusätzlichen Fahrmodus.
 
 Ausführlicher deutscher Bericht mit Hashes, Fundstellen, Einschränkungen und
 nächsten Schritten: [SSM-Entwicklungsbericht](docs/supersport/BERICHT.md) und
-[Fortsetzung mit Originalcode-Nachweisen](docs/supersport/FORTSETZUNG.md).
+[Fortsetzung mit Originalcode-Nachweisen](docs/supersport/FORTSETZUNG.md) sowie
+[aktuelle Doppelklick-Spezifikation](docs/supersport/DOPPELKLICK.md).
 
 ```bash
 # Reine Offline-Demo, ohne Firmware oder angeschlossenen Scooter

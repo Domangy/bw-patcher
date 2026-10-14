@@ -184,9 +184,10 @@ def test_exact_original_decompression_and_three_digests(originals):
 def test_hook_candidates_have_instruction_boundaries_but_no_injection_approval(originals):
     decoded, _ = originals
     sites = hook_candidates(decoded.app, decoded.report["blocks"])
-    assert [s["app_offset"] for s in sites] == [0x8264, 0x82fc, 0x611c, 0xc76c]
+    assert [s["app_offset"] for s in sites] == [0x8264, 0x82fc, 0x8550, 0x611c, 0xc76c]
     assert sites[0]["branch_target"] == APP_BASE + 0x81ce
     assert sites[1]["branch_target"] == APP_BASE + 0x8260
+    assert sites[2]["branch_target"] == APP_BASE + 0x80aa
     assert all(s["continuation_address"] == s["address"] + 4 for s in sites)
     assert all(not s["approved_for_injection"] for s in sites)
     assert all(not s["direct_ota_byte_offset_exists"] for s in sites)
@@ -290,3 +291,92 @@ def test_unknown_external_calls_and_short_budget_fail_explicitly(emu):
         emu.call(0x8260, budget=1)
     with pytest.raises(AnalysisError, match="budget"):
         emu.call(0x8260, budget=0)
+
+
+def test_six_dense_presses_include_reserved_five_event(emu):
+    assert [(row['tick'], row['event']) for row in emu.click_trace(6)] == [
+        (25, 2), (57, 2), (73, 5), (89, 2),
+    ]
+
+
+@pytest.mark.parametrize('pause', [40, 50, 60, 80, 120])
+def test_three_separate_pairs_produce_only_three_original_doubles(emu, pause):
+    trace = emu.click_trace(6, pair_pause_ticks=pause)
+    assert [row['event'] for row in trace] == [2, 2, 2]
+    assert [row['tick'] for row in trace] == [25, 57 + pause, 89 + 2 * pause]
+
+
+@pytest.mark.parametrize('start,expected', [
+    (3, [11, 2, 3]), (11, [2, 3, 11]), (2, [3, 11, 2]),
+])
+def test_original_dispatcher_executes_all_three_normal_mode_changes(emu, start, expected):
+    emu.uc.mem_write(emu.INFO + 1, bytes((start,)))
+    emu.uc.mem_write(emu.INFO + 0xe, b'\x01')
+    trace = emu.click_trace(6, pair_pause_ticks=60, dispatch=True)
+    assert [row['event'] for row in trace] == [2, 2, 2]
+    assert [row['mode_after'] for row in trace] == expected
+    assert all(row['mode_cycle_called'] for row in trace)
+    assert all(emu.last_abi.values())
+
+
+def test_original_dispatcher_retains_its_mode_gate(emu):
+    emu.uc.mem_write(emu.INFO + 1, b'\x03')
+    emu.uc.mem_write(emu.INFO + 0xe, b'\x01')
+    emu.uc.mem_write(emu.INFO + 0x10, b'\x01')
+    trace = emu.click_trace(6, pair_pause_ticks=60, dispatch=True)
+    assert [row['event'] for row in trace] == [2, 2, 2]
+    assert [row['mode_after'] for row in trace] == [3, 3, 3]
+    assert not any(row['mode_cycle_called'] for row in trace)
+
+
+def test_original_single_click_toggles_emulated_light_output_without_mode_change(emu):
+    emu.uc.mem_write(emu.INFO + 1, b'\x03')
+    emu.uc.mem_write(emu.INFO + 0xe, b'\x01')
+    emu.uc.mem_write(0x208660, b'\x04')
+    emu.uc.mem_write(0x40001000, struct.pack('<I', 0xa5a50000))
+    for output in (0xa5a50040, 0xa5a50000):
+        trace = emu.click_trace(1, dispatch=True)
+        assert [row['event'] for row in trace] == [1]
+        assert trace[0]['mode_after'] == 3 and not trace[0]['mode_cycle_called']
+        assert struct.unpack('<I', bytes(emu.uc.mem_read(0x40001000, 4)))[0] == output
+        assert bytes(emu.uc.mem_read(0x208660, 1)) == b'\x04'
+
+
+@pytest.mark.parametrize('pause,activate', [(0, False), (20, False), (60, True)])
+def test_original_dispatcher_events_and_actual_modes_drive_event_simulation(
+    emu, originals, pause, activate,
+):
+    from bwpatcher.ssm import Action, Inputs, Mode, State, SuperSportSimulation
+    from bwpatcher.mi5pro_emulator import OriginalAppEmulator, consume_mode_fragment
+    from dataclasses import replace
+    mapping = {11: Mode.WALK, 2: Mode.DRIVE, 3: Mode.SPORT}
+    emu.uc.mem_write(emu.INFO + 1, b'\x03')
+    emu.uc.mem_write(emu.INFO + 0xe, b'\x01')
+    trace = emu.click_trace(6, pair_pause_ticks=pause, dispatch=True)
+    inputs = Inputs(powered=True, mode=Mode.SPORT, speed_mm_s=0, fault=False,
+                    throttle_released=True, locked=False, telemetry_valid=True,
+                    oem_reserved=False)
+    model = SuperSportSimulation(enabled=True)
+    builder = OriginalAppEmulator(originals[0].app)
+    model.sample(0, None, inputs)
+    model.sample(600, None, inputs)
+    actions = []
+    for row in trace:
+        now = 600 + row['nominal_ms']
+        actions.extend(model.sample(now, row['event'], inputs))
+        if row['mode_cycle_called']:
+            ticket = model.pending_mode_request.ticket
+            frame = builder.controller_frame(row['mode_after'], 2)
+            consumed = consume_mode_fragment(originals[1], frame)
+            assert consumed['mode'] == row['mode_after']
+            inputs = replace(inputs, mode=mapping[consumed['mode']])
+            actions.extend(model.sample(now + 1, None, inputs, mode_ack=ticket))
+    assert actions.count(Action.NEXT_MODE) == 3
+    assert (Action.ACTIVATE in actions) is activate
+    assert (model.state is State.ACTIVE) is activate
+    if activate:
+        assert model.display({})['mode_icons'] == frozenset(Mode)
+        assert model.sample(now + 920, 2, inputs) == [Action.DEACTIVATE]
+        assert model.inputs.mode is Mode.SPORT
+    else:
+        assert Action.OEM_EVENT in actions
