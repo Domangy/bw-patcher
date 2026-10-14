@@ -84,12 +84,15 @@ poetry run python -m bwpatcher mi4 firmware.bin firmware_modified.bin patch1,pat
 
 **Entwicklungsstufe 3: Simulation erfolgreich. Kein SSM-Firmware-Patch.**
 Die Originaldateien MCU `0007` und BLE `2.7.0_0015` wurden lokal untersucht.
-Tastenverarbeitung und gleichzeitige Ansteuerung der drei Displaysymbole sind
-noch nicht nachgewiesen. Die SSM-Option bleibt gesperrt, auch mit `--experimental`.
+Das BLE-APP ist entpackt; originale Tasten-, Anzeige- und Modustransportroutinen
+wurden offline ausgeführt. Drei unabhängige Anzeige-Bits sind bis zur Byte-Ausgabe
+belegt. Ihre elektrische Wirkung und ein integrierter SSM-Patch bleiben ungeprüft.
+Die SSM-Option bleibt gesperrt, auch mit `--experimental`.
 Bestehende Speed-Patches erzeugen keinen zusätzlichen Fahrmodus.
 
 Ausführlicher deutscher Bericht mit Hashes, Fundstellen, Einschränkungen und
-nächsten Schritten: [SSM-Entwicklungsbericht](docs/supersport/BERICHT.md).
+nächsten Schritten: [SSM-Entwicklungsbericht](docs/supersport/BERICHT.md) und
+[Fortsetzung mit Originalcode-Nachweisen](docs/supersport/FORTSETZUNG.md).
 
 ```bash
 # Reine Offline-Demo, ohne Firmware oder angeschlossenen Scooter
@@ -98,13 +101,22 @@ python -m bwpatcher.ssm_demo
 # Originaldateien nur lesen; es wird keine Firmware ausgegeben
 python -m bwpatcher.ssm_firmware --mcu /lokal/mcu_0007.bin --ble /lokal/ble_2.7.0_0015.bin
 
+# Optionale Forschungsabhängigkeit für Originalcode-Ausführung
+poetry install --with research
+python -m bwpatcher.mi5pro_research /lokal/ble_2.7.0_0015.bin --evidence
+python -m bwpatcher.mi5pro_emulator --ble /lokal/ble_2.7.0_0015.bin --mcu /lokal/mcu_0007.bin
+
+# Neue Analysefälle, mit lokalen Originalen zusätzlich Originalcodeprüfungen
+MI5PRO_FIRMWARE_DIR=/lokal/originale python -m pytest tests/test_mi5pro_research.py -q
+
 # Tests ohne proprietäre Dateien (Originaltests werden übersprungen)
 # Test- und GUI-Abhängigkeiten sind in poetry install enthalten.
 python -m pytest tests -q
 ```
 
 Die Streamlit-Oberfläche zeigt diesen Entwicklungsstand für Mi5Pro an.
-Die logische Anzeige aller drei Symbole ist ausschliesslich simuliert.
+Die GUI stellt weiterhin die abstrakte Simulation dar. Die neuen Werkzeuge
+prüfen getrennt ausgewählte Originalfunktionen mit emulierter Peripherie.
 
 ## License
 

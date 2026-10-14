@@ -1,0 +1,586 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-14",
+  "scope": "Metadaten und isolierte Originalcode-Ausführung; keine Firmwareausgabe/Hardwarefreigabe",
+  "originals": {
+    "mcu": {
+      "version": "0007",
+      "size": 149504,
+      "sha256": "ddcd65400c4fbdb45cb4cdbec2e812026d7bc6cb755fd9dd0180800caed5f9b8"
+    },
+    "ble": {
+      "version": "2.7.0_0015",
+      "size": 152552,
+      "sha256": "061d34cac06fb31d93ff8f47650cd09d61fa46e7a883b35c23f35cabff1e6df7"
+    }
+  },
+  "ble_analysis": {
+    "patch_header": {
+      "ic_type": 5,
+      "secure_version": 0,
+      "flags": 16790,
+      "image_id": 10130,
+      "crc16": 0,
+      "payload_length": 39924,
+      "image_type": 2,
+      "xip": false,
+      "encrypted_flag": true,
+      "load_when_boot": true,
+      "encrypted_load_flag": false,
+      "key_selector": 1
+    },
+    "patch_digest": {
+      "size": 40948,
+      "stored": "e46b3499cd6e90eb3c8513b8658634e2b6b12342a913b4fed962cc14b9176f3d",
+      "computed": "e46b3499cd6e90eb3c8513b8658634e2b6b12342a913b4fed962cc14b9176f3d",
+      "valid": true
+    },
+    "compressed_header": {
+      "ic_type": 5,
+      "secure_version": 0,
+      "flags": 8577,
+      "image_id": 10131,
+      "crc16": 0,
+      "payload_length": 111496,
+      "image_type": 1,
+      "xip": true,
+      "encrypted_flag": false,
+      "load_when_boot": false,
+      "encrypted_load_flag": false,
+      "key_selector": 0
+    },
+    "compressed_offset": 40960,
+    "compressed_header_size": 96,
+    "compressed_payload_sha256": "fc2469fe23c91bfe3b5a87bafca6741ac1bc9f11f396bd4f820ba031ba18fdd6",
+    "compressed_payload_sha256_valid": true,
+    "compression_algorithm": 1,
+    "blocks": [
+      {
+        "container_offset": 41056,
+        "decoded_offset": 0,
+        "packed_size": 11085,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 52149,
+        "decoded_offset": 16384,
+        "packed_size": 10762,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 62919,
+        "decoded_offset": 32768,
+        "packed_size": 9099,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 72026,
+        "decoded_offset": 49152,
+        "packed_size": 6984,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 79018,
+        "decoded_offset": 65536,
+        "packed_size": 9628,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 88654,
+        "decoded_offset": 81920,
+        "packed_size": 10639,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 99301,
+        "decoded_offset": 98304,
+        "packed_size": 11609,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 110918,
+        "decoded_offset": 114688,
+        "packed_size": 12031,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 122957,
+        "decoded_offset": 131072,
+        "packed_size": 11326,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 134291,
+        "decoded_offset": 147456,
+        "packed_size": 10616,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 144915,
+        "decoded_offset": 163840,
+        "packed_size": 6993,
+        "unpacked_size": 16384,
+        "last": false
+      },
+      {
+        "container_offset": 151916,
+        "decoded_offset": 180224,
+        "packed_size": 625,
+        "unpacked_size": 1388,
+        "last": true
+      }
+    ],
+    "padding_size": 3,
+    "decoded_size": 181612,
+    "decoded_sha256": "95edba0d2d4a46405bfbb1a433b7ad4c1c72fc1787bc76eefe99a727c711bbae",
+    "decoded_image_base": 8445952,
+    "decoded_image_digest": {
+      "size": 181612,
+      "stored": "cd7638f9e2bc797a57e20325f5a42606583111e0fe6d2120999333a022740cfe",
+      "computed": "cd7638f9e2bc797a57e20325f5a42606583111e0fe6d2120999333a022740cfe",
+      "valid": true
+    },
+    "ssm_patch_available": false,
+    "hook_candidates": [
+      {
+        "name": "Vor ursprünglichem Tasten-Phasenautomaten",
+        "app_offset": 33380,
+        "address": 8479332,
+        "instruction": "bl #0x8161ce",
+        "branch_target": 8479182,
+        "continuation_address": 8479336,
+        "local_contract": "R0 liefert Phasenereignis; R4=0 und Klassifikatorzustand müssen erhalten bleiben.",
+        "compressed_block_container_offset": 62919,
+        "direct_ota_byte_offset_exists": false,
+        "approved_for_injection": false,
+        "missing": [
+          "Reservierter ausführbarer Speicher und private RAM-Belegung",
+          "Vollständiger Aufruf-/Interrupt-/Timingvertrag auf Hardware",
+          "Originale Integritäts- und Updateanforderungen unverändert erfüllen",
+          "Kohärente MCU/BLE-Zustandsübertragung und Fehlerpriorität"
+        ]
+      },
+      {
+        "name": "Klassifikator-Aufruf vor der ursprünglichen Aktionsentscheidung",
+        "app_offset": 33532,
+        "address": 8479484,
+        "instruction": "bl #0x816260",
+        "branch_target": 8479328,
+        "continuation_address": 8479488,
+        "local_contract": "R0 liefert klassifiziertes Ereignis; OEM-Langdruck/Reset erhalten.",
+        "compressed_block_container_offset": 62919,
+        "direct_ota_byte_offset_exists": false,
+        "approved_for_injection": false,
+        "missing": [
+          "Reservierter ausführbarer Speicher und private RAM-Belegung",
+          "Vollständiger Aufruf-/Interrupt-/Timingvertrag auf Hardware",
+          "Originale Integritäts- und Updateanforderungen unverändert erfüllen",
+          "Kohärente MCU/BLE-Zustandsübertragung und Fehlerpriorität"
+        ]
+      },
+      {
+        "name": "Kopie des Modusbitsatzes in Anzeige-Slot 12",
+        "app_offset": 24860,
+        "address": 8470812,
+        "instruction": "strb.w r0, [r4, #0x60]",
+        "continuation_address": 8470816,
+        "local_contract": "R4=0x2088b0; R0 ist Bitmap, R5 bleibt live.",
+        "compressed_block_container_offset": 52149,
+        "direct_ota_byte_offset_exists": false,
+        "approved_for_injection": false,
+        "missing": [
+          "Reservierter ausführbarer Speicher und private RAM-Belegung",
+          "Vollständiger Aufruf-/Interrupt-/Timingvertrag auf Hardware",
+          "Originale Integritäts- und Updateanforderungen unverändert erfüllen",
+          "Kohärente MCU/BLE-Zustandsübertragung und Fehlerpriorität"
+        ]
+      },
+      {
+        "name": "Lesen von Slot 12 vor der Anzeigeaggregation",
+        "app_offset": 51052,
+        "address": 8497004,
+        "instruction": "ldrb.w r0, [r4, #0x60]",
+        "continuation_address": 8497008,
+        "local_contract": "R0 wird in R5 verodert; R1 und R4..R11 sind live.",
+        "compressed_block_container_offset": 72026,
+        "direct_ota_byte_offset_exists": false,
+        "approved_for_injection": false,
+        "missing": [
+          "Reservierter ausführbarer Speicher und private RAM-Belegung",
+          "Vollständiger Aufruf-/Interrupt-/Timingvertrag auf Hardware",
+          "Originale Integritäts- und Updateanforderungen unverändert erfüllen",
+          "Kohärente MCU/BLE-Zustandsübertragung und Fehlerpriorität"
+        ]
+      }
+    ]
+  },
+  "original_execution": {
+    "status": "Originalroutinen mit emulierter Peripherie, kein Hardwaretest",
+    "ssm_patch_available": false,
+    "clicks": {
+      "1": [
+        {
+          "tick": 59,
+          "nominal_ms": 590,
+          "event": 1
+        }
+      ],
+      "2": [
+        {
+          "tick": 25,
+          "nominal_ms": 250,
+          "event": 2
+        }
+      ],
+      "5": [
+        {
+          "tick": 25,
+          "nominal_ms": 250,
+          "event": 2
+        },
+        {
+          "tick": 57,
+          "nominal_ms": 570,
+          "event": 2
+        },
+        {
+          "tick": 73,
+          "nominal_ms": 730,
+          "event": 5
+        },
+        {
+          "tick": 123,
+          "nominal_ms": 1230,
+          "event": 1
+        }
+      ]
+    },
+    "display": {
+      "1": [
+        [
+          "display_command",
+          64
+        ],
+        [
+          "display_command",
+          192
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          194
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          196
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          198
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          200
+        ],
+        [
+          "display_data",
+          1
+        ],
+        [
+          "display_command",
+          202
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          204
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          143
+        ],
+        [
+          "pin_configuration",
+          38
+        ]
+      ],
+      "2": [
+        [
+          "display_command",
+          64
+        ],
+        [
+          "display_command",
+          192
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          194
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          196
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          198
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          200
+        ],
+        [
+          "display_data",
+          2
+        ],
+        [
+          "display_command",
+          202
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          204
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          143
+        ],
+        [
+          "pin_configuration",
+          38
+        ]
+      ],
+      "4": [
+        [
+          "display_command",
+          64
+        ],
+        [
+          "display_command",
+          192
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          194
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          196
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          198
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          200
+        ],
+        [
+          "display_data",
+          4
+        ],
+        [
+          "display_command",
+          202
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          204
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          143
+        ],
+        [
+          "pin_configuration",
+          38
+        ]
+      ],
+      "7": [
+        [
+          "display_command",
+          64
+        ],
+        [
+          "display_command",
+          192
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          194
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          196
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          198
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          200
+        ],
+        [
+          "display_data",
+          7
+        ],
+        [
+          "display_command",
+          202
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          204
+        ],
+        [
+          "display_data",
+          0
+        ],
+        [
+          "display_command",
+          143
+        ],
+        [
+          "pin_configuration",
+          38
+        ]
+      ]
+    },
+    "uart": [
+      {
+        "frame": "5110072b00000000000093ae",
+        "mcu_consumer": {
+          "upper_nibble": 2,
+          "mode": 11
+        }
+      },
+      {
+        "frame": "511007220000000000008aae",
+        "mcu_consumer": {
+          "upper_nibble": 2,
+          "mode": 2
+        }
+      },
+      {
+        "frame": "511007230000000000008bae",
+        "mcu_consumer": {
+          "upper_nibble": 2,
+          "mode": 3
+        }
+      }
+    ]
+  },
+  "verification": {
+    "targeted_passed": 55,
+    "targeted_failed": 0,
+    "targeted_skipped": 0,
+    "new_cases": 51,
+    "affected_existing_cases": 4,
+    "without_originals_passed": 24,
+    "without_originals_skipped": 27,
+    "hardware_tests": 0,
+    "unicorn_version": "2.1.4"
+  },
+  "ssm_patch_available": false
+}

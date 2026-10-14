@@ -1,12 +1,15 @@
 # Xiaomi Electric Scooter 5 Pro: SuperSport Mode (SSM)
 
-Stand: 14. Oktober 2026. Untersuchte Codebasis: `95a8f339787a1fb6486554d61b573b8e2b688c53`.
+Stand: 14. Oktober 2026. Untersuchte Ausgangscodebasis: `95a8f339787a1fb6486554d61b573b8e2b688c53`.
 Zielgerät laut Auftrag: `xiaomi.scooter.5pro`, Schweizer Ausführung,
 MCU `0007`, BLE `2.7.0_0015`.
 
 **Entwicklungsstufe 3 — Simulation erfolgreich.** Die Zustandsmaschine,
 schreibgeschützte Originalprüfung, Export-Sperre, Offline-Demo und Tests sind
-implementiert. Ein ausführbarer SSM-Firmware-Patch und die elektrische
+implementiert. In der [Fortsetzung der Originalanalyse](FORTSETZUNG.md) sind
+nun auch das BLE-APP entpackt, Originalroutinen ausgeführt sowie Tasten-,
+Display- und Modusübertragungspfade lokalisiert. Ein ausführbarer SSM-Firmware-Patch
+und die elektrische
 Ansteuerung aller drei Symbole sind **nicht implementiert**. Es gibt keine
 Hardwarefreigabe. Es wurde kein Scooter geflasht und keine flashbare
 SSM-Datei erzeugt.
@@ -145,39 +148,35 @@ Ihre vollständige Bedeutung und Sicherheitswirkung sind nicht geklärt. Die
 Methoden werden deshalb **nicht** als SSM-Bausteine aufgerufen. `sls=30` allein
 erzeugt weder einen vierten Zustand noch eine geheime Aktivierung.
 
-### Tasten, Display und Kommunikation
+### Tasten, Display und Kommunikation: aktualisierter Befund
 
-Die Routine bei `0x203b2` und die anschliessenden Bitfeldextraktionen bei
-`0x204a0` zeigen die Übernahme gepackter Eingaben in Zustandsvariablen. Sie
-belegen keinen direkten GPIO-/Rohflankenpfad der Einschalttaste. UART-Framing,
-Nachrichtenrichtung, Schedulerkontext und Zuordnung zur BLE-/Dashboard-Seite
-sind für diese Laufzeitnachricht noch nicht vollständig rekonstruiert.
+Die [Fortsetzung](FORTSETZUNG.md) mit [maschinellen Nachweisen](BEFUNDE.json)
+ersetzt den früheren offenen Stand dieses Abschnitts:
 
-Eine reine Auswertung bereits umgeschalteter Moduswerte reicht nicht aus,
-um fünf Rohklicks zuverlässig zu erkennen: Die ersten beiden könnten bereits
-den Originalmodus umschalten. Ein späterer Port braucht daher einen Hook
-vor der Original-Doppelklickentscheidung oder einen nachgewiesenen Transport
-der einzelnen Tastenereignisse. Dieser Hook wurde nicht identifiziert.
+- Das APP ab BLE-Containeroffset `0xa000` ist LZMA-komprimiert. Zwölf Blöcke
+  ergeben 181612 Bytes, drei interne SHA-256-Prüfungen stimmen. Hohe Entropie
+  war kein Verschlüsselungsbeweis. Ein Teil des ROM-Patch-Images bleibt ungeklärt.
+- Der Tastenpfad ist vom nominalen 10-ms-Timer über IO-Ereignis `0x1f` und
+  APP+`0x82d4` bis zu den Automaten APP+`0x8260`/`0x81ce` und GPIO-Bit 29
+  lokalisiert. Die Originalausführung bestätigt zwei frühzeitige Doppelklickereignisse
+  in der geprüften Fünferfolge; statisch ist ein eigener OEM-Fünfer-/Resetpfad belegt.
+- Die Anzeige-Bitmap `0x208660` ist vom skalaren Fahrmodus getrennt. Die Bits
+  `1`, `2`, `4` und ihre Kombination `7` passieren originale Kopier- und
+  Aggregationsroutinen bis zum Datenbyte für Adresskommando `0xc8`.
+  Elektrische Segmentzuordnung und unbeeinträchtigte Warnanzeigen sind offen.
+- Der BLE-Builder APP+`0x3940` erzeugt einen 12-Byte-Modusframe; der originale
+  MCU-Feldkonsument bei Dateioffset `0x203b2` übernimmt daraus den Modus.
+  Neun Kombinationen wurden über beide Originale geprüft. Das ist kein
+  vollständiger UART-/RTOS-/Hardwaretest und noch kein SSM-Kommunikationsvertrag.
+- Vier vollständige Thumb-Instruktionen sind als semantische Hook-Kandidaten
+  belegt: APP+`0x8264`, `0x82fc`, `0x611c`, `0xc76c`. Sie sind **nicht zur
+  Injektion freigegeben**. APP-Offsets sind keine direkten OTA-Dateioffsets.
 
-Die BLE-Datei enthält einen Vorspann mit `release` bei `0x67` und lesbare
-DFU-/Flash-Diagnosetexte, unter anderem bei `0x2500`, `0x2520`, `0x2944` und
-`0x9ac0`. Frühe Bereiche sind mit Thumb-Code vereinbar. Der hintere Bereich
-ab `0xa000` hat eine gemessene Byte-Entropie von ca. 7,998 Bit/Byte. Hohe
-Entropie allein beweist weder Verschlüsselung noch Kompression. Das vollständige
-Containerformat und dessen interne Integritäts-/Signaturprüfung wurden nicht
-rekonstruiert; die Zuordnung der BLE-Version beruht auf Katalog und Dateihash.
-
-Es gibt bislang keinen nachgewiesenen LED-/LCD-Treiber, keine bestätigte
-Segmentbelegung und kein belegtes Kommando für drei gleichzeitig leuchtende
-Modussymbole. Die Hardware könnte dies erlauben; ihre Unmöglichkeit wurde
-ebenfalls nicht bewiesen. Insbesondere dürfen Moduswerte nicht als unabhängige
-Symbolbits interpretiert oder einfach verodert werden.
-
-Der aktuelle Befund erlaubt **keinen belastbaren Firmware-Patch**. Die 240
-Paddingbytes sind kein freigegebener Codebereich. Es fehlen geprüfte
-RAM-Reservierung, Stack-/Register-/Interrupt-Verträge, Sprungreichweite,
-Relokationen, Code-/Datenreferenzen und eine Integration beider beteiligten
-Firmwareseiten. Es wurden deshalb keine Sprünge oder geratenen Befehle injiziert.
+Der aktuelle Befund erlaubt weiterhin **keinen belastbaren SSM-Firmware-Patch**.
+Freier Flash-/RAM-Platz, vollständige Kontextverträge, sichere Geschwindigkeits-
+und Fehlerübergänge sowie unveränderte Update-/Vertrauensanforderungen sind
+noch nachzuweisen. Die 240 MCU-Paddingbytes sind kein freigegebener Codebereich.
+Es wurden keine Sprünge oder geratenen Befehle injiziert.
 
 ## B. Implementierung
 
@@ -187,6 +186,9 @@ Firmwareseiten. Es wurden deshalb keine Sprünge oder geratenen Befehle injizier
 | --- | --- |
 | `bwpatcher/ssm.py` | Unabhängige Referenzsimulation: `Timing`, `Inputs`, `ButtonRecognizer`, `SuperSportSimulation`, Zustände und Aktionen |
 | `bwpatcher/ssm_firmware.py` | Schreibgeschützter Audit, strikte Originalidentifikation, begrenzte CRC-Bereiche und reproduzierbare Disassemblierung |
+| `bwpatcher/mi5pro_research.py` | Begrenzte Bee2-/LZMA-Analyse, Hashes, Codefenster und nicht freigegebene Hook-Kandidaten |
+| `bwpatcher/mi5pro_emulator.py` | Kontrollierte Ausführung ausgewählter Originalroutinen mit emulierter Peripherie |
+| `tests/test_mi5pro_research.py` | Neue Container-, Originalcode-, Anzeige- und BLE-/MCU-Feldprüfungen |
 | `bwpatcher/ssm_demo.py` | Deterministische Offline-Demo einschliesslich Fahrt, vorgemerkter Deaktivierung und Neustart |
 | `bwpatcher/utils.py` | SSM-Anforderungen vor erster Patchaktion abbrechen, auch gemischt mit vorhandenen Patches |
 | `bwpatcher/__main__.py` | SSM-Fehler beendet CLI mit Code 1, ohne Ausgabedatei anzulegen/zu überschreiben; Hilfe ergänzt |
@@ -194,7 +196,7 @@ Firmwareseiten. Es wurden deshalb keine Sprünge oder geratenen Befehle injizier
 | `tests/test_ssm.py` | Pegel-, Gesten-, Zustands-, Display- und Grenzfalltests |
 | `tests/test_ssm_firmware.py` | Synthetische Struktur-/Exporttests und optionale Original-Regressionsprüfungen |
 | `tests/test_ssm_ui.py` | Streamlit-Prüfungen und Demoablauf |
-| `pyproject.toml` | Projektwurzel zum pytest-Importpfad ergänzt |
+| `pyproject.toml` | pytest-Importpfad und optionale Forschungsgruppe mit Unicorn ergänzt |
 | `.gitignore` | Python-Tests versionierbar gemacht; proprietäre Fixture-Verzeichnisse weiterhin ausgeschlossen |
 | `README.md`, `docs/supersport/` | Status, Benutzung und Analyse dokumentiert |
 
@@ -253,7 +255,8 @@ der Verbindung sowie eine andere gehaltene Kombination zum Werksreset.
 Das Modell verhindert die SSM-Aktivierung mit betätigtem Gashebel. Es
 implementiert die Hersteller-Resetlogik nicht. Ein echter Adapter muss solche
 Originalkombinationen vor der SSM-Klassifizierung unverändert an ihren
-Originalpfad geben; dafür reichen die derzeit belegten Hooks nicht aus.
+Originalpfad geben; die nun lokalisierten Kandidaten sind dafür noch nicht
+als integrierter Adapter umgesetzt oder geprüft.
 
 ### Zustand, Rückkehr und Anzeige
 
@@ -317,6 +320,13 @@ Weder `--experimental` noch der Web-Queryparameter entsperren SSM. Ein Versuch
 wie `ssm` oder `sls=30,ssm,chk` wird vollständig vor der Patchausführung abgewiesen.
 
 ## C. Testergebnisse
+
+**Aktuelle Fortsetzung:** 55 gezielte Prüfungen bestanden (51 neue und vier vom
+Audit betroffene bisherige Fälle), keine fehlgeschlagen oder übersprungen.
+Details und Reproduktion stehen in [FORTSETZUNG.md](FORTSETZUNG.md#8-werkzeuge-prüfungen-und-verbleibende-arbeit).
+Die folgenden 114 beziehungsweise 108 Tests dokumentieren den vorherigen
+Simulationsstand. Sie wurden nicht vollständig erneut ausgeführt; die
+Abdeckungswerte gelten ausschliesslich für diesen früheren Stand.
 
 Ausgeführt mit Python 3.12, Keystone 0.9.2, Capstone 4.0.2 und pytest 8;
 Streamlit wurde mit `AppTest` ohne angeschlossene Hardware geprüft.
@@ -389,42 +399,36 @@ für öffentliche Strassen in der Schweiz.
 
 ## E. Noch benötigte Nachweise und nächste Schritte
 
-Die beiden im Auftrag genannten Originaldateien sind bereits beschafft;
-für diesen Stand muss der Benutzer sie nicht nochmals bereitstellen.
-Für eine Fortsetzung fehlen konkret:
+Die beiden Originaldateien sind vorhanden; eine erneute Bereitstellung ist
+nicht erforderlich. Die [detaillierte Trennung der Hindernisse](FORTSETZUNG.md#8-werkzeuge-prüfungen-und-verbleibende-arbeit)
+ist massgebend für die Fortsetzung.
 
-1. **Tastenpfad:** Nachgewiesene GPIO-/Treiber-/Debounce-/Mehrfachklickroutine
-   im Dashboard/BLE, vor der Original-Doppelklickaktion. Alternativ ein
-   belegter Transport einzelner Flanken zum Controller samt Zeitbasis.
-2. **Originalverhalten:** Zeitgestempelte passive Traces für Einzel-, Doppel-,
-   Fünffach- und Langdruck, jeweils mit Modus, Geschwindigkeit, Gas, Bremse,
-   Sperre und Fehlern. Die OEM-Resetkombinationen müssen unterscheidbar bleiben.
-3. **Displaypfad:** Dashboard-/Platinenrevision, Segmenttreiber/Pinbelegung,
-   Multiplexverfahren und mindestens ein nachweislich unabhängiger Zugriff auf
-   Fussgänger-, D- und S-Symbol. Ein Foto und vorhandene Schaltungsunterlagen
-   können die Zuordnung stützen; nötig ist letztlich ein elektrischer Nachweis
-   ohne beeinträchtigte Warn-/Fehleranzeige.
-4. **BLE-Paketformat:** Vollständige Segmentzuordnung, Integritätsprüfung und
-   bei Bedarf eine legitim lesbare Laufzeit-/Flash-Abbildung der exakt
-   passenden Dashboardfirmware. Der bestehende OTA-Download ist vorhanden,
-   aber nicht vollständig dekodiert. Sicherheitsprüfungen dürfen nicht
-   zugunsten einer Integration entfernt werden.
-5. **Controllervertrag:** Belegte Geschwindigkeits-/Fehler-/Sperrsignale,
-   Stillstandsdefinition, Telemetriefrische, maximale Latenzen, NVM-/Region-
-   Zuordnung und eine Umschaltstelle, die keine Originalschutzlogik umgeht.
-6. **Portierungsnachweis:** Zulässiger Flash-/RAM-Platz, Startupinitialisierung,
-   gesicherte Hooks, Register-/Stackverträge, Code-/Datenreferenzen,
-   Worst-Case-Laufzeit und reproduzierbare Prüfung jeder geänderten Bytefolge.
-7. **Nach einem getrennten, ausdrücklich autorisierten Hardwaretestaufbau:**
-   Zuerst Tasten-/Displayintegration ohne Antrieb, danach Strom-/Brems-/Fehler-
-   und App-Kompatibilität, zuletzt kontrollierte Lasttests. Ein Fahrtest allein
-   wäre kein Nachweis für sämtliche Schutzmechanismen. Es wird nicht automatisch
-   geflasht.
+Noch softwareseitig offen:
 
-Sollte sich eine gleichzeitige Ansteuerung aller drei Symbole als technisch
-unmöglich erweisen, käme eine separat nachgewiesene vorhandene Anzeige infrage.
-Eine solche Alternative wurde noch nicht ausgewählt, da der Segmenttreiber
-und die unbeeinträchtigte Fehleranzeige zuvor geklärt werden müssen.
+1. Vollständige Referenz-/Kontrollflussanalyse, Flash-/RAM-Reservierung,
+   Initialisierung, Live-Register und Kontextverträge der Hook-Kandidaten.
+2. Integration einer Klassifikation vor der OEM-Aktionsentscheidung bei Erhalt
+   von Langdruck, Reset und sonstigen Originalkombinationen.
+3. Vollständiger Kommunikationsvertrag für SSM zwischen BLE und MCU,
+   einschliesslich Fehlern, Quittierung, Telemetriefrische und Neustart.
+4. Normalwert aus Region/NVM erhalten und sichere Umschaltstelle ohne Entfernung
+   der bestehenden Begrenzungsprüfung nachweisen. Originale Update- und
+   Vertrauensprüfungen dürfen nicht umgangen werden.
+
+Zwingend auf echter Hardware zu messen:
+
+1. Tatsächliche Dashboard-/Controllerrevision, Tasterpegel, Prellen und
+   Scheduler-/Ende-zu-Ende-Latenz unter konkurrierenden Ereignissen.
+2. Physische UART-Leitungen, Pegel, Baudrate, Übertragungsfehler und Zeitverhalten.
+3. Displaytreiber, Segmentzuordnung, dauerhaftes gemeinsames Leuchten der drei
+   Piktogramme, Helligkeit/Strom und Vorrang von Warn-/Fehleranzeigen.
+4. Laufzeit unter Last, reale Stillstands-/Geschwindigkeitswerte, sichere
+   Übergänge, Strom-/Temperatur-/Brems-/Schutzreaktionen und Xiaomi-Home-Verhalten.
+
+Ein Hardwaretestaufbau braucht eine getrennte ausdrückliche Autorisierung.
+Zuerst kommen passive Tasten-/UART-/Displaymessungen und Prüfungen ohne Antrieb;
+ein Fahrtest allein ersetzt keine Schutzprüfung. Es wird nicht automatisch
+geflasht. Die neuen Softwarebelege ersetzen keine dieser Messungen.
 
 ## F. Entwicklungsstatus und Quellen
 
@@ -442,7 +446,9 @@ und die unbeeinträchtigte Fehleranzeige zuvor geklärt werden müssen.
 vorgenommen und kein Pull Request eröffnet. Der Forschungsstand liegt als
 [Draft-PR #1](https://github.com/Domangy/bw-patcher/pull/1) gegen `master` im Fork vor.
 
-Quellen für nachprüfbare Zuordnung und Originalbedienung:
+Die zusätzliche SDK-, Firmware-, Protokoll- und Schaltplanrecherche ist mit
+fixierten Quellständen in [FORTSETZUNG.md](FORTSETZUNG.md#7-öffentliche-recherche-und-quellenbewertung)
+dokumentiert. Quellen für ursprüngliche Zuordnung und Originalbedienung:
 
 - [Firmwarekatalog, fixierter Commit](https://github.com/argusblack/mi-fw-info/blob/ae9260764c863aede29bba8053c1986645e1e07f/mi.json)
 - [Katalogoberfläche: Benennung des BLE-Downloads](https://github.com/argusblack/mi-fw-info/blob/ae9260764c863aede29bba8053c1986645e1e07f/static/app.js)

@@ -114,9 +114,15 @@ def assess_firmware(data: bytes, component: str) -> dict:
         except ValueError as exc:
             result["issues"].append(str(exc))
     else:
+        from bwpatcher.mi5pro_research import inspect_ble, AnalysisError
+
+        try:
+            result["structure"] = inspect_ble(data).report
+        except AnalysisError as exc:
+            result["issues"].append(str(exc))
         result["issues"].append(
-            "BLE-Paketformat, interne Integritätsprüfung und Displaysteuerung "
-            "sind nicht vollständig rekonstruiert."
+            "SSM-Integration und elektrische Anzeige sind weiterhin ungeprüft; "
+            "Hashprüfungen ersetzen keine Herstellersignaturprüfung."
         )
     return result
 
