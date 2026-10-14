@@ -439,8 +439,8 @@ und die unbeeinträchtigte Fehleranzeige zuvor geklärt werden müssen.
 Änderungsziel ist ausschliesslich der Fork
 [Domangy/bw-patcher](https://github.com/Domangy/bw-patcher), Branch
 `codex/mi5pro-ssm-research`. Am Originalrepository wurden keine Änderungen
-vorgenommen und kein Pull Request eröffnet. Der Forschungsstand wird als
-Draft-PR gegen `master` im Fork vorbereitet.
+vorgenommen und kein Pull Request eröffnet. Der Forschungsstand liegt als
+[Draft-PR #1](https://github.com/Domangy/bw-patcher/pull/1) gegen `master` im Fork vor.
 
 Quellen für nachprüfbare Zuordnung und Originalbedienung:
 
