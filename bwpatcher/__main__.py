@@ -12,6 +12,9 @@ CLI:
   python -m bwpatcher auto infile.bin outfile.bin patches
   python -m bwpatcher mi6 infile.bin outfile.bin patches
   python -m bwpatcher detect infile.bin [more.bin ...] [--json]
+
+  SSM: nur Offline-Simulation; kein Firmware-Patch verfügbar.
+  Originalprüfung: python -m bwpatcher.ssm_firmware --help
 """
 
 import argparse
@@ -27,6 +30,7 @@ from bwpatcher.detect import (
 )
 from bwpatcher.modules import ALL_MODULES
 from bwpatcher.utils import patch_map, patch_firmware, ExperimentalPatchError
+from bwpatcher.ssm import SSMUnavailableError
 
 
 def _cmd_detect(argv: list) -> int:
@@ -95,7 +99,7 @@ def _cmd_patch(argv: list) -> int:
             web=False,
             allow_experimental=args.experimental,
         )
-    except ExperimentalPatchError as e:
+    except (ExperimentalPatchError, SSMUnavailableError) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
     with open(args.outfile, "wb") as fh:

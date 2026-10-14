@@ -166,8 +166,7 @@ debug/
 # Local firmware test fixtures
 tests/data/*.bin
 
-# Local-only helpers and tests
-tests/
+# Local-only helpers
 bins/
 /*.bin
 scripts/leqi_fw_tool.py
@@ -176,3 +175,6 @@ AGENTS.md
 # IDE-specific
 .vscode/
 .idea/
+# Proprietäre lokale Forschungsdateien niemals veröffentlichen.
+/firmware-private/
+/firmware-originals/

@@ -80,6 +80,32 @@ poetry run python -m bwpatcher mi4 firmware.bin firmware_modified.bin patch1,pat
 
 **Note:** Always maintain backups of original firmware before modification.
 
+## Mi5Pro: SuperSport Mode (SSM) — Forschungsstand
+
+**Entwicklungsstufe 3: Simulation erfolgreich. Kein SSM-Firmware-Patch.**
+Die Originaldateien MCU `0007` und BLE `2.7.0_0015` wurden lokal untersucht.
+Tastenverarbeitung und gleichzeitige Ansteuerung der drei Displaysymbole sind
+noch nicht nachgewiesen. Die SSM-Option bleibt gesperrt, auch mit `--experimental`.
+Bestehende Speed-Patches erzeugen keinen zusätzlichen Fahrmodus.
+
+Ausführlicher deutscher Bericht mit Hashes, Fundstellen, Einschränkungen und
+nächsten Schritten: [SSM-Entwicklungsbericht](docs/supersport/BERICHT.md).
+
+```bash
+# Reine Offline-Demo, ohne Firmware oder angeschlossenen Scooter
+python -m bwpatcher.ssm_demo
+
+# Originaldateien nur lesen; es wird keine Firmware ausgegeben
+python -m bwpatcher.ssm_firmware --mcu /lokal/mcu_0007.bin --ble /lokal/ble_2.7.0_0015.bin
+
+# Tests ohne proprietäre Dateien (Originaltests werden übersprungen)
+# Test- und GUI-Abhängigkeiten sind in poetry install enthalten.
+python -m pytest tests -q
+```
+
+Die Streamlit-Oberfläche zeigt diesen Entwicklungsstand für Mi5Pro an.
+Die logische Anzeige aller drei Symbole ist ausschliesslich simuliert.
+
 ## License
 
 Licensed under CC BY-NC-SA 4.0 (NonCommercial, ShareAlike). See [LICENSE](LICENSE) for full terms.
