@@ -80,6 +80,60 @@ poetry run python -m bwpatcher mi4 firmware.bin firmware_modified.bin patch1,pat
 
 **Note:** Always maintain backups of original firmware before modification.
 
+## Mi5Pro: SuperSport Mode (SSM) — Forschungsstand
+
+**Entwicklungsstufe 3: Simulation erfolgreich. Kein SSM-Firmware-Patch.**
+Die Originaldateien MCU `0007` und BLE `2.7.0_0015` wurden lokal untersucht.
+Das BLE-APP ist entpackt; originale Tasten-, Anzeige- und Modustransportroutinen
+wurden offline ausgeführt. Drei unabhängige Anzeige-Bits sind bis zur Byte-Ausgabe
+belegt. Ihre elektrische Wirkung und ein integrierter SSM-Patch bleiben ungeprüft.
+Die SSM-Option bleibt gesperrt, auch mit `--experimental`.
+Aktivierung im Modell: unabhängige einmalige Absichtsfreigabe, dann drei
+getrennte OEM-Doppelklicks mit normalen Moduswechseln und bestätigtem Sportmodus
+nach dem dritten Wechsel. Ohne Freigabe bleiben drei Moduswechsel normal.
+Ein realer Freigabeweg ist noch offen. Einzelklick/Licht bleiben
+OEM-Aktionen; ein Doppelklick beendet SSM im Stillstand. Bestehende Speed-Patches
+erzeugen keinen zusätzlichen Fahrmodus.
+
+Ausführlicher deutscher Bericht mit Hashes, Fundstellen, Einschränkungen und
+nächsten Schritten: [SSM-Entwicklungsbericht](docs/supersport/BERICHT.md) und
+[Fortsetzung mit Originalcode-Nachweisen](docs/supersport/FORTSETZUNG.md) sowie
+[aktuelle Doppelklick-Spezifikation](docs/supersport/DOPPELKLICK.md). Die
+[Integrationsanalyse](docs/supersport/INTEGRATION.md) belegt Speicherabschnitte,
+originale Begrenzungswahl und Status-Rückkanal: Das Modusecho bestätigt keine
+angewendete Geschwindigkeitsgrenze. Vollständige Hook-Verträge und sichere
+Speicherreservierung fehlen weiterhin. Die neue
+[Brems-/Regleranalyse](docs/supersport/BREMSE_REGLER_GRENZEN.md) verfolgt den
+Bremswert bis zum MCU-Zweig und führt die gesamte Grenz-/Reglerfunktion aus.
+Bremspegel beweist keine Aktivierungsabsicht; auch interne Sollwerte bleiben
+im Modusecho unsichtbar. Kein SSM-Adapter ist freigegeben.
+
+```bash
+# Reine Offline-Demo, ohne Firmware oder angeschlossenen Scooter
+python -m bwpatcher.ssm_demo
+
+# Originaldateien nur lesen; es wird keine Firmware ausgegeben
+python -m bwpatcher.ssm_firmware --mcu /lokal/mcu_0007.bin --ble /lokal/ble_2.7.0_0015.bin
+
+# Optionale Forschungsabhängigkeit für Originalcode-Ausführung
+poetry install --with research
+python -m bwpatcher.mi5pro_research /lokal/ble_2.7.0_0015.bin --evidence
+python -m bwpatcher.mi5pro_emulator --ble /lokal/ble_2.7.0_0015.bin --mcu /lokal/mcu_0007.bin
+python -m bwpatcher.mi5pro_integration --ble /lokal/ble_2.7.0_0015.bin --mcu /lokal/mcu_0007.bin
+python -m bwpatcher.mi5pro_constraints --ble /lokal/ble_2.7.0_0015.bin --mcu /lokal/mcu_0007.bin
+
+# Neue Analysefälle, mit lokalen Originalen zusätzlich Originalcodeprüfungen
+MI5PRO_FIRMWARE_DIR=/lokal/originale python -m pytest tests/test_mi5pro_research.py -q
+
+# Tests ohne proprietäre Dateien (Originaltests werden übersprungen)
+# Test- und GUI-Abhängigkeiten sind in poetry install enthalten.
+python -m pytest tests -q
+```
+
+Die Streamlit-Oberfläche zeigt diesen Entwicklungsstand für Mi5Pro an.
+Die GUI stellt weiterhin die abstrakte Simulation dar. Die neuen Werkzeuge
+prüfen getrennt ausgewählte Originalfunktionen mit emulierter Peripherie.
+
 ## License
 
 Licensed under CC BY-NC-SA 4.0 (NonCommercial, ShareAlike). See [LICENSE](LICENSE) for full terms.

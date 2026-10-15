@@ -25,6 +25,8 @@ from functools import wraps
 from importlib import import_module
 import re
 
+from bwpatcher.ssm import SSMUnavailableError, SSM_BLOCK_REASON
+
 
 class SignatureException(Exception):
     pass
@@ -95,6 +97,12 @@ def is_model_patch_experimental(model: str, patch_code: str) -> bool:
 
 
 def patch_firmware(model: str, data: bytes, patches: list, web=True, allow_experimental=False):
+    # Vor jeder Instanziierung/Mutation prüfen, auch im toleranten CLI-Pfad.
+    # Ein unbekannter Patch darf hier keinen scheinbar erfolgreichen Export
+    # oder einen teilweise ausgeführten Mischauftrag mit SSM verursachen.
+    if any(p.split("=", 1)[0].strip().lower() == "ssm" for p in patches):
+        raise SSMUnavailableError(SSM_BLOCK_REASON)
+
     # CHK patch must always come last for every scooter using update file
     # --> no longer forcing, instead put in GUI
     #if patches[-1] != "chk":

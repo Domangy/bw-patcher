@@ -1,0 +1,328 @@
+{
+  "date": "2026-10-15",
+  "originals": {
+    "mcu": {
+      "version": "0007",
+      "size": 149504,
+      "sha256": "ddcd65400c4fbdb45cb4cdbec2e812026d7bc6cb755fd9dd0180800caed5f9b8"
+    },
+    "ble": {
+      "version": "2.7.0_0015",
+      "size": 152552,
+      "sha256": "061d34cac06fb31d93ff8f47650cd09d61fa46e7a883b35c23f35cabff1e6df7"
+    }
+  },
+  "schema_version": 1,
+  "base_commit": "f940ba7",
+  "brake_diagnostic": {
+    "kind": "line_test_response_not_executed",
+    "address": 8471336,
+    "r0": 233,
+    "r1": 2162664,
+    "r2": 2,
+    "r3": 0,
+    "payload": "0578"
+  },
+  "original_brake_fault_path": {
+    "raw": 4095,
+    "initial_brake_percent": 100,
+    "analog_state_after_400_calls": 0,
+    "analog_state_after_401_calls": 6,
+    "aggregated_info_2c": 21,
+    "final_brake_percent": 0,
+    "wall_clock_duration_proven": false
+  },
+  "analog_path": [
+    {
+      "throttle_raw": 600,
+      "brake_raw": 600,
+      "throttle_percent": 0,
+      "brake_percent": 0,
+      "adc_ready": true,
+      "frame": "511007230000000000008bae",
+      "fresh_sample_proven": false,
+      "activation_intent_proven": false,
+      "mcu_consumer": {
+        "throttle_percent": 0,
+        "brake_percent": 0
+      }
+    },
+    {
+      "throttle_raw": 600,
+      "brake_raw": 900,
+      "throttle_percent": 0,
+      "brake_percent": 0,
+      "adc_ready": true,
+      "frame": "511007230000000000008bae",
+      "fresh_sample_proven": false,
+      "activation_intent_proven": false,
+      "mcu_consumer": {
+        "throttle_percent": 0,
+        "brake_percent": 0
+      }
+    },
+    {
+      "throttle_raw": 600,
+      "brake_raw": 901,
+      "throttle_percent": 0,
+      "brake_percent": 0,
+      "adc_ready": true,
+      "frame": "511007230000000000008bae",
+      "fresh_sample_proven": false,
+      "activation_intent_proven": false,
+      "mcu_consumer": {
+        "throttle_percent": 0,
+        "brake_percent": 0
+      }
+    },
+    {
+      "throttle_raw": 600,
+      "brake_raw": 916,
+      "throttle_percent": 0,
+      "brake_percent": 1,
+      "adc_ready": true,
+      "frame": "511007230000000100008cae",
+      "fresh_sample_proven": false,
+      "activation_intent_proven": false,
+      "mcu_consumer": {
+        "throttle_percent": 0,
+        "brake_percent": 1
+      }
+    },
+    {
+      "throttle_raw": 600,
+      "brake_raw": 1400,
+      "throttle_percent": 0,
+      "brake_percent": 32,
+      "adc_ready": true,
+      "frame": "51100723000000200000abae",
+      "fresh_sample_proven": false,
+      "activation_intent_proven": false,
+      "mcu_consumer": {
+        "throttle_percent": 0,
+        "brake_percent": 32
+      }
+    },
+    {
+      "throttle_raw": 600,
+      "brake_raw": 2449,
+      "throttle_percent": 0,
+      "brake_percent": 99,
+      "adc_ready": true,
+      "frame": "51100723000000630000eeae",
+      "fresh_sample_proven": false,
+      "activation_intent_proven": false,
+      "mcu_consumer": {
+        "throttle_percent": 0,
+        "brake_percent": 99
+      }
+    },
+    {
+      "throttle_raw": 600,
+      "brake_raw": 3000,
+      "throttle_percent": 0,
+      "brake_percent": 100,
+      "adc_ready": true,
+      "frame": "51100723000000640000efae",
+      "fresh_sample_proven": false,
+      "activation_intent_proven": false,
+      "mcu_consumer": {
+        "throttle_percent": 0,
+        "brake_percent": 100
+      }
+    }
+  ],
+  "oem_doubles_brake_held": [
+    {
+      "tick": 25,
+      "nominal_ms": 250,
+      "event": 2,
+      "mode_after": 11,
+      "mode_cycle_called": true
+    },
+    {
+      "tick": 117,
+      "nominal_ms": 1170,
+      "event": 2,
+      "mode_after": 2,
+      "mode_cycle_called": true
+    },
+    {
+      "tick": 209,
+      "nominal_ms": 2090,
+      "event": 2,
+      "mode_after": 3,
+      "mode_cycle_called": true
+    }
+  ],
+  "brake_only_proves_intent": false,
+  "reserved_reset_selection": [
+    {
+      "throttle_raw": 600,
+      "brake_raw": 1600,
+      "oem_reset_call_selected": false
+    },
+    {
+      "throttle_raw": 1600,
+      "brake_raw": 600,
+      "oem_reset_call_selected": false
+    },
+    {
+      "throttle_raw": 1400,
+      "brake_raw": 1600,
+      "oem_reset_call_selected": false
+    },
+    {
+      "throttle_raw": 1600,
+      "brake_raw": 1400,
+      "oem_reset_call_selected": false
+    },
+    {
+      "throttle_raw": 1600,
+      "brake_raw": 1600,
+      "oem_reset_call_selected": true
+    }
+  ],
+  "control_steps": [
+    {
+      "selected_limit_raw": 417,
+      "controller_setpoint_raw": 417,
+      "control_output_raw": 0,
+      "control_output_mirror_raw": 0,
+      "reported_speed_raw": 0,
+      "setpoint_read_by_control": false,
+      "original_clamp_executed": true,
+      "minimum_sp": 536877940,
+      "motor_effect_proven": false
+    },
+    {
+      "selected_limit_raw": 417,
+      "controller_setpoint_raw": 417,
+      "control_output_raw": 5000,
+      "control_output_mirror_raw": 5000,
+      "reported_speed_raw": 0,
+      "setpoint_read_by_control": true,
+      "original_clamp_executed": true,
+      "minimum_sp": 536877940,
+      "motor_effect_proven": false
+    }
+  ],
+  "normal_drive_to_sport": [
+    {
+      "selected_limit_raw": 313,
+      "controller_setpoint_raw": 313,
+      "control_output_raw": 5000,
+      "control_output_mirror_raw": 5000,
+      "reported_speed_raw": 0,
+      "setpoint_read_by_control": false,
+      "original_clamp_executed": true,
+      "minimum_sp": 536877940,
+      "motor_effect_proven": false
+    },
+    {
+      "selected_limit_raw": 417,
+      "controller_setpoint_raw": 417,
+      "control_output_raw": 5000,
+      "control_output_mirror_raw": 5000,
+      "reported_speed_raw": 0,
+      "setpoint_read_by_control": true,
+      "original_clamp_executed": true,
+      "minimum_sp": 536877940,
+      "motor_effect_proven": false
+    }
+  ],
+  "same_mode_different_setpoint": [
+    {
+      "selected_limit_raw": 417,
+      "controller_setpoint_raw": 200,
+      "control_output_raw": 0,
+      "control_output_mirror_raw": 0,
+      "reported_speed_raw": 0,
+      "setpoint_read_by_control": false,
+      "original_clamp_executed": true,
+      "minimum_sp": 536877940,
+      "motor_effect_proven": false
+    },
+    {
+      "selected_limit_raw": 417,
+      "controller_setpoint_raw": 417,
+      "control_output_raw": 0,
+      "control_output_mirror_raw": 0,
+      "reported_speed_raw": 0,
+      "setpoint_read_by_control": false,
+      "original_clamp_executed": true,
+      "minimum_sp": 536877940,
+      "motor_effect_proven": false
+    }
+  ],
+  "status_for_different_setpoints": [
+    "61300a23008800190100000000609e",
+    "61300a23008800190100000000609e"
+  ],
+  "status_has_applied_limit_ack": false,
+  "app_task_creation_arguments": {
+    "kind": "task_create_not_executed",
+    "address": 158160,
+    "r0": 2130340,
+    "r1": 8455660,
+    "r2": 8455239,
+    "r3": 0,
+    "stack_arguments": [
+      8192,
+      1
+    ]
+  },
+  "peripheral_boundary_scenario": "Originaldaten, Präfix 60556, Sport, zwei isolierte Regleraufrufe",
+  "peripheral_boundaries": [
+    {
+      "entry_file_offset": 112252,
+      "blocked": true,
+      "unmapped": {
+        "access": 19,
+        "address": 1073818708,
+        "size": 4,
+        "pc_file_offset": 116706
+      },
+      "peripheral_model_supplied": false
+    },
+    {
+      "entry_file_offset": 108856,
+      "blocked": true,
+      "unmapped": {
+        "access": 19,
+        "address": 1073818708,
+        "size": 4,
+        "pc_file_offset": 114208
+      },
+      "peripheral_model_supplied": false
+    }
+  ],
+  "inbound_reference_candidates": {
+    "complete_control_flow_proven": false,
+    "candidates": [
+      {
+        "source_app_offset": 24894,
+        "target_app_offset": 24820,
+        "kind": "direct_branch_candidate"
+      },
+      {
+        "source_app_offset": 24960,
+        "target_app_offset": 50866,
+        "kind": "direct_branch_candidate"
+      },
+      {
+        "source_app_offset": 40490,
+        "target_app_offset": 33492,
+        "kind": "direct_branch_candidate"
+      },
+      {
+        "source_app_offset": 50052,
+        "target_app_offset": 40472,
+        "kind": "aligned_thumb_pointer_candidate"
+      }
+    ]
+  },
+  "new_speed_state_implemented": false,
+  "ssm_hooks_injected": false,
+  "hardware_tests": 0
+}

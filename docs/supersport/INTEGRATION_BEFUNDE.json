@@ -1,0 +1,542 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-15",
+  "status": "Nur Originalcode-Nachweise; kein integrierter SSM-Patch",
+  "originals": {
+    "mcu": "ddcd65400c4fbdb45cb4cdbec2e812026d7bc6cb755fd9dd0180800caed5f9b8",
+    "ble": "061d34cac06fb31d93ff8f47650cd09d61fa46e7a883b35c23f35cabff1e6df7"
+  },
+  "ble_memory": {
+    "initializer_app_offset": 1244,
+    "rom_operations_modelled_not_executed": [
+      368282,
+      368668
+    ],
+    "copies": [
+      {
+        "destination": 2128896,
+        "source_address": 8626164,
+        "size": 292,
+        "source_app_offset": 180212,
+        "end": 2129188
+      },
+      {
+        "destination": 2129188,
+        "source_address": 8626456,
+        "size": 1108,
+        "source_app_offset": 180504,
+        "end": 2130296
+      }
+    ],
+    "zero": {
+      "destination": 2130296,
+      "size": 15368,
+      "end": 2145664
+    },
+    "zero_length_sections_at": 2211840,
+    "synthetic_emulator_stack": 2162672,
+    "private_ram_reserved": false,
+    "executable_extension_reserved": false,
+    "note": "Abschnittsgrenzen sind keine freien Heap-/Taskstackgrenzen."
+  },
+  "mcu_scatter_entries": [
+    [
+      43828,
+      536870912,
+      2104,
+      2508
+    ],
+    [
+      44688,
+      536873016,
+      4976,
+      33748
+    ]
+  ],
+  "mcu_initial_limit_table": [
+    417,
+    417,
+    313,
+    417,
+    313,
+    417,
+    313,
+    522,
+    522,
+    417,
+    522,
+    417,
+    668,
+    417
+  ],
+  "prefix_limit_selection": [
+    {
+      "prefix": "60550",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 0
+    },
+    {
+      "prefix": "60555",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 1
+    },
+    {
+      "prefix": "60556",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 2
+    },
+    {
+      "prefix": "60557",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 3
+    },
+    {
+      "prefix": "60561",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 4
+    },
+    {
+      "prefix": "60564",
+      "drive_raw": 417,
+      "sport_raw": 668,
+      "index": 5
+    },
+    {
+      "prefix": "61143",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 6
+    }
+  ],
+  "original_speed_selection": [
+    {
+      "prefix": "60550",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 0,
+      "mode": 11,
+      "selected_raw": 125
+    },
+    {
+      "prefix": "60550",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 0,
+      "mode": 2,
+      "selected_raw": 417
+    },
+    {
+      "prefix": "60550",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 0,
+      "mode": 3,
+      "selected_raw": 522
+    },
+    {
+      "prefix": "60555",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 1,
+      "mode": 11,
+      "selected_raw": 125
+    },
+    {
+      "prefix": "60555",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 1,
+      "mode": 2,
+      "selected_raw": 417
+    },
+    {
+      "prefix": "60555",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 1,
+      "mode": 3,
+      "selected_raw": 522
+    },
+    {
+      "prefix": "60556",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 2,
+      "mode": 11,
+      "selected_raw": 125
+    },
+    {
+      "prefix": "60556",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 2,
+      "mode": 2,
+      "selected_raw": 313
+    },
+    {
+      "prefix": "60556",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 2,
+      "mode": 3,
+      "selected_raw": 417
+    },
+    {
+      "prefix": "60557",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 3,
+      "mode": 11,
+      "selected_raw": 125
+    },
+    {
+      "prefix": "60557",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 3,
+      "mode": 2,
+      "selected_raw": 417
+    },
+    {
+      "prefix": "60557",
+      "drive_raw": 417,
+      "sport_raw": 522,
+      "index": 3,
+      "mode": 3,
+      "selected_raw": 522
+    },
+    {
+      "prefix": "60561",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 4,
+      "mode": 11,
+      "selected_raw": 125
+    },
+    {
+      "prefix": "60561",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 4,
+      "mode": 2,
+      "selected_raw": 313
+    },
+    {
+      "prefix": "60561",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 4,
+      "mode": 3,
+      "selected_raw": 417
+    },
+    {
+      "prefix": "60564",
+      "drive_raw": 417,
+      "sport_raw": 668,
+      "index": 5,
+      "mode": 11,
+      "selected_raw": 125
+    },
+    {
+      "prefix": "60564",
+      "drive_raw": 417,
+      "sport_raw": 668,
+      "index": 5,
+      "mode": 2,
+      "selected_raw": 417
+    },
+    {
+      "prefix": "60564",
+      "drive_raw": 417,
+      "sport_raw": 668,
+      "index": 5,
+      "mode": 3,
+      "selected_raw": 668
+    },
+    {
+      "prefix": "61143",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 6,
+      "mode": 11,
+      "selected_raw": 125
+    },
+    {
+      "prefix": "61143",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 6,
+      "mode": 2,
+      "selected_raw": 313
+    },
+    {
+      "prefix": "61143",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 6,
+      "mode": 3,
+      "selected_raw": 417
+    }
+  ],
+  "controller_feedback": {
+    "frame": "61300a23008800190100000000609e",
+    "strict_decode": {
+      "echoed_mode": 3,
+      "upper_nibble": 2,
+      "speed_raw": 0,
+      "confirms_applied_speed_limit": false,
+      "wire_sequence_number_present": false
+    },
+    "original_receiver": {
+      "status_30_dispatched": true,
+      "rom_rx_clear_stub_used": false,
+      "requested_mode": 2,
+      "feedback_mode": 3,
+      "feedback_upper": 2,
+      "feedback_speed_raw_or_adjusted": 0
+    }
+  },
+  "mcu_status_function_minimum_stack": 536877848,
+  "different_limits_identical_mode_status": [
+    {
+      "prefix": "60556",
+      "drive_raw": 313,
+      "sport_raw": 417,
+      "index": 2,
+      "status_frame": "61300a23008800190100000000609e"
+    },
+    {
+      "prefix": "60564",
+      "drive_raw": 417,
+      "sport_raw": 668,
+      "index": 5,
+      "status_frame": "61300a23008800190100000000609e"
+    }
+  ],
+  "original_short_frame_dispatch": {
+    "status_30_dispatched": true,
+    "rom_rx_clear_stub_used": false,
+    "requested_mode": 0,
+    "feedback_mode": 1,
+    "feedback_upper": 9,
+    "feedback_speed_raw_or_adjusted": 0
+  },
+  "strict_observer_rejects_short_frame": true,
+  "hook_contexts": [
+    {
+      "app_offset": 33532,
+      "sp": 2162632,
+      "lr": 268435457,
+      "r0": 0,
+      "r1": 1,
+      "r2": 1,
+      "r3": 0,
+      "r12": 0,
+      "r4": 2130540,
+      "r5": 2131492,
+      "r6": 2763325954,
+      "r7": 2763326211,
+      "r8": 0,
+      "r9": 2763326725,
+      "r10": 2763326982,
+      "r11": 2763327239,
+      "apsr": 1610612736,
+      "itstate": 0
+    },
+    {
+      "app_offset": 33380,
+      "sp": 2162624,
+      "lr": 8479489,
+      "r0": 0,
+      "r1": 1,
+      "r2": 1,
+      "r3": 0,
+      "r12": 0,
+      "r4": 0,
+      "r5": 2131492,
+      "r6": 2763325954,
+      "r7": 2763326211,
+      "r8": 0,
+      "r9": 2763326725,
+      "r10": 2763326982,
+      "r11": 2763327239,
+      "apsr": 1610612736,
+      "itstate": 0
+    },
+    {
+      "app_offset": 33384,
+      "sp": 2162624,
+      "lr": 8479197,
+      "r0": 1,
+      "r1": 2131492,
+      "r2": 0,
+      "r3": 3,
+      "r12": 0,
+      "r4": 0,
+      "r5": 2131492,
+      "r6": 2763325954,
+      "r7": 2763326211,
+      "r8": 0,
+      "r9": 2763326725,
+      "r10": 2763326982,
+      "r11": 2763327239,
+      "apsr": 0,
+      "itstate": 0
+    },
+    {
+      "app_offset": 33536,
+      "sp": 2162632,
+      "lr": 8479197,
+      "r0": 2,
+      "r1": 2131492,
+      "r2": 1,
+      "r3": 0,
+      "r12": 0,
+      "r4": 2130540,
+      "r5": 2131492,
+      "r6": 2763325954,
+      "r7": 2763326211,
+      "r8": 0,
+      "r9": 2763326725,
+      "r10": 2763326982,
+      "r11": 2763327239,
+      "apsr": 0,
+      "itstate": 0
+    },
+    {
+      "app_offset": 34128,
+      "sp": 2162632,
+      "lr": 8480077,
+      "r0": 0,
+      "r1": 1,
+      "r2": 1,
+      "r3": 0,
+      "r12": 0,
+      "r4": 2130540,
+      "r5": 2131492,
+      "r6": 2131392,
+      "r7": 800,
+      "r8": 0,
+      "r9": 2130620,
+      "r10": 1,
+      "r11": 2763327239,
+      "apsr": 1610612736,
+      "itstate": 0
+    },
+    {
+      "app_offset": 34132,
+      "sp": 2162632,
+      "lr": 8480085,
+      "r0": 0,
+      "r1": 3437035520,
+      "r2": 3437035521,
+      "r3": 3437035522,
+      "r12": 3437035523,
+      "r4": 2130540,
+      "r5": 2131492,
+      "r6": 2131392,
+      "r7": 800,
+      "r8": 0,
+      "r9": 2130620,
+      "r10": 1,
+      "r11": 2763327239,
+      "apsr": 2818572288,
+      "itstate": 0
+    },
+    {
+      "app_offset": 24860,
+      "sp": 2162656,
+      "lr": 8468149,
+      "r0": 4,
+      "r1": 2131552,
+      "r2": 128,
+      "r3": 0,
+      "r12": 3437035523,
+      "r4": 2132144,
+      "r5": 2131552,
+      "r6": 2763325954,
+      "r7": 2763326211,
+      "r8": 2763326468,
+      "r9": 2763326725,
+      "r10": 2763326982,
+      "r11": 2763327239,
+      "apsr": 1207959552,
+      "itstate": 0
+    },
+    {
+      "app_offset": 24864,
+      "sp": 2162656,
+      "lr": 8468149,
+      "r0": 4,
+      "r1": 2131552,
+      "r2": 128,
+      "r3": 0,
+      "r12": 3437035523,
+      "r4": 2132144,
+      "r5": 2131552,
+      "r6": 2763325954,
+      "r7": 2763326211,
+      "r8": 2763326468,
+      "r9": 2763326725,
+      "r10": 2763326982,
+      "r11": 2763327239,
+      "apsr": 1207959552,
+      "itstate": 0
+    },
+    {
+      "app_offset": 51052,
+      "sp": 2162624,
+      "lr": 268435457,
+      "r0": 0,
+      "r1": 0,
+      "r2": 0,
+      "r3": 1,
+      "r12": 3437035523,
+      "r4": 2132144,
+      "r5": 0,
+      "r6": 0,
+      "r7": 0,
+      "r8": 0,
+      "r9": 0,
+      "r10": 0,
+      "r11": 0,
+      "apsr": 1744830464,
+      "itstate": 0
+    },
+    {
+      "app_offset": 51056,
+      "sp": 2162624,
+      "lr": 268435457,
+      "r0": 4,
+      "r1": 0,
+      "r2": 0,
+      "r3": 1,
+      "r12": 3437035523,
+      "r4": 2132144,
+      "r5": 0,
+      "r6": 0,
+      "r7": 0,
+      "r8": 0,
+      "r9": 0,
+      "r10": 0,
+      "r11": 0,
+      "apsr": 1744830464,
+      "itstate": 0
+    }
+  ],
+  "synthetic_stack_minimum_in_selected_calls": 2162608,
+  "volatile_stub_registers_clobbered": [
+    "r1",
+    "r2",
+    "r3",
+    "r12",
+    "APSR"
+  ],
+  "ssm_patch_available": false,
+  "hardware_validated": false
+}

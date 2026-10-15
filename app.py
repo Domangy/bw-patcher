@@ -6,6 +6,7 @@ from bwpatcher.utils import (
 from bwpatcher.modules import ALL_MODULES
 from bwpatcher import __version__
 from bwpatcher.detect import detect_bytes
+from bwpatcher.ssm import SSM_STATUS
 from io import BytesIO
 import streamlit as st
 from streamlit_scroll_to_top import scroll_to_here
@@ -348,6 +349,23 @@ def _patch_allowed(patch_code: str) -> bool:
         return True
     return experimental_mode
 
+
+if scooter_model == "mi5pro":
+    with st.expander("SuperSport Mode (SSM) — Entwicklungsstand"):
+        st.checkbox("Enable SuperSport Mode (SSM)", value=False, disabled=True)
+        st.caption(SSM_STATUS)
+        st.write(
+            "Ziel: 30 km/h · Aktivierung: 3 getrennte Doppelklicks · Rückkehr: 1 Doppelklick · "
+            "Anzeige: alle 3 Modussymbole."
+        )
+        st.info(
+            "Die Simulation zählt OEM-Doppelklickereignisse und verlangt danach "
+            "den bestätigten Sportmodus sowie vorher eine unabhängige Absichtsfreigabe. "
+            "Firmwareintegration und elektrische "
+            "Displaywirkung sind ungeprüft. Auch der experimentelle "
+            "Modus gibt keinen SSM-Firmwareexport frei. Bestehende Speed-Patches "
+            "erzeugen keinen zusätzlichen Fahrmodus."
+        )
 
 st.markdown('<p class="bw-section">Speed limits</p>', unsafe_allow_html=True)
 
