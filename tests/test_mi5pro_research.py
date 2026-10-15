@@ -360,6 +360,7 @@ def test_original_dispatcher_events_and_actual_modes_drive_event_simulation(
     builder = OriginalAppEmulator(originals[0].app)
     model.sample(0, None, inputs)
     model.sample(600, None, inputs)
+    assert model.grant_activation_intent(600)
     actions = []
     for row in trace:
         now = 600 + row['nominal_ms']

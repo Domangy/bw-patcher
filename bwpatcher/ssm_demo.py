@@ -53,6 +53,8 @@ def demonstration() -> list[dict]:
 
     sample()
     wait(600)
+    assert model.grant_activation_intent(now)
+    trace.append({'event': 'Unabhängige Absichtsfreigabe (nur Demo)', 'time_ms': now})
     for _ in range(3):
         double()
     inputs = replace(inputs, speed_mm_s=8000, throttle_released=False)
@@ -60,6 +62,8 @@ def demonstration() -> list[dict]:
     double()
     inputs = replace(inputs, speed_mm_s=0, throttle_released=True)
     wait(600)
+    assert model.grant_activation_intent(now)
+    trace.append({'event': 'Neue einmalige Absichtsfreigabe (nur Demo)', 'time_ms': now})
     for _ in range(3):
         double()
     model.reset()

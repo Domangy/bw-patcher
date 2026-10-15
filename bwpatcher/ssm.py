@@ -62,6 +62,7 @@ class Timing:
     sequence_ms: int = 4000
     confirm_ms: int = 500
     standstill_ms: int = 500
+    intent_ms: int = 6000
 
     def __post_init__(self):
         if any(type(v) is not int or v <= 0 for v in vars(self).values()):
@@ -132,6 +133,7 @@ class SuperSportSimulation:
         self._stopped_since: int | None = None
         self._last_time = -1
         self._last_event_time = -1
+        self._intent_until: int | None = None
         self._clear_sequence()
         # Tickets innerhalb derselben Instanz nicht wiederverwenden (alte Quittungen).
 
@@ -139,6 +141,31 @@ class SuperSportSimulation:
         self.double_count = 0
         self._first_double: int | None = None
         self._last_double: int | None = None
+
+    def _revoke_intent(self):
+        self._intent_until = None
+        self._clear_sequence()
+
+    def grant_activation_intent(self, now: int) -> bool:
+        """Lokaler Modellvertrag für ein unabhängiges, bewusstes Freigabesignal.
+
+        Kein BLE-Kommando und keine Authentifizierung implementiert. Der spätere
+        Adapter darf diesen Aufruf niemals aus normalen Moduswechseln ableiten.
+        Nur ein gerade verarbeiteter, sicherer Snapshot darf die Freigabe tragen.
+        """
+        if type(now) is not int or now < 0 or now != self._last_time:
+            raise ValueError('Absichtsfreigabe braucht den aktuellen Snapshot-Zeitpunkt.')
+        if not (
+            self.enabled and self.state is State.NORMAL
+            and self.pending_mode_request is None
+            and self.inputs.activation_safe and self.inputs.mode is Mode.SPORT
+            and self._stopped_since is not None
+            and now - self._stopped_since >= self.timing.standstill_ms
+        ):
+            return False
+        self._clear_sequence()
+        self._intent_until = now + self.timing.intent_ms
+        return True
 
     def _request_mode(self, now, target, *, activate=False, restore=False):
         self._serial += 1
@@ -182,19 +209,27 @@ class SuperSportSimulation:
             self._stopped_since is not None
             and now - self._stopped_since >= self.timing.standstill_ms
         )
-        eligible = self.enabled and inputs.activation_safe and stopped
+        if self._intent_until is not None and now > self._intent_until:
+            self._revoke_intent()
+        eligible = (
+            self.enabled and inputs.activation_safe and stopped
+            and self._intent_until is not None
+        )
         if not eligible or dashboard_event or duplicate or event not in (None, 2):
-            self._clear_sequence()
+            self._revoke_intent()
+            eligible = False
         if self._first_double is not None and (
             now - self._first_double > self.timing.sequence_ms
             or now - self._last_double > self.timing.double_gap_ms
         ):
-            self._clear_sequence()
+            self._revoke_intent()
+            eligible = False
 
         pending = self.pending_mode_request
         if pending and now - pending.issued_at > self.timing.confirm_ms:
             self.pending_mode_request = None
-            self._clear_sequence()
+            self._revoke_intent()
+            eligible = False
             pending = None
         if mode_ack is not None:
             self.pending_mode_request = None
@@ -202,24 +237,24 @@ class SuperSportSimulation:
                 pending is None or pending.ticket != mode_ack
                 or inputs.mode is not pending.target or inputs.telemetry_valid is not True
             ):
-                self._clear_sequence()
+                self._revoke_intent()
             elif (
                 pending.activate_after and self.double_count == 3
                 and eligible and inputs.mode is Mode.SPORT and event is None
                 and not dashboard_event and self.state is State.NORMAL
             ):
                 self.state = State.ACTIVE
-                self._clear_sequence()
+                self._revoke_intent()
                 out.append(Action.ACTIVATE)
             elif pending.activate_after:
-                self._clear_sequence()
+                self._revoke_intent()
         elif previous.mode is not inputs.mode and pending is None:
-            self._clear_sequence()
+            self._revoke_intent()
 
         if inputs.powered is not True:
             self.state = State.NORMAL
             self.pending_mode_request = None
-            self._clear_sequence()
+            self._revoke_intent()
         elif self.state is not State.NORMAL:
             unsafe = (
                 inputs.fault is not False or inputs.locked is not False
@@ -234,7 +269,7 @@ class SuperSportSimulation:
                 if inputs.mode is Mode.SPORT:
                     self.state = State.NORMAL
                     self.pending_mode_request = None
-                    self._clear_sequence()
+                    self._revoke_intent()
                     out.append(Action.DEACTIVATE)
                 elif inputs.activation_safe and self.pending_mode_request is None:
                     self._request_mode(now, Mode.SPORT, restore=True)
@@ -257,18 +292,18 @@ class SuperSportSimulation:
                 out.append(Action.DEFER_EXIT if not stopped else Action.DEACTIVATE)
                 if stopped:
                     self.state = State.NORMAL
-                self._clear_sequence()
+                self._revoke_intent()
             # Während vorgemerkter Rückkehr wird kein normaler Moduswechsel ausgelöst.
             return out
 
         # Jedes normale Doppelereignis bleibt eine OEM-Aktion, auch ohne SSM-Freigabe.
         if self.pending_mode_request is not None:
-            self._clear_sequence()  # Vorherige Originalaktion noch nicht quittiert.
+            self._revoke_intent()  # Vorherige Originalaktion noch nicht quittiert.
         if eligible and self._last_double is not None:
             gap = now - self._last_double
             if not self.timing.double_min_ms <= gap <= self.timing.double_gap_ms:
-                self._clear_sequence()
-        if eligible:
+                self._revoke_intent()
+        if eligible and self._intent_until is not None:
             if self.double_count == 0:
                 self._first_double = now
             self.double_count += 1

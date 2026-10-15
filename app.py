@@ -360,7 +360,8 @@ if scooter_model == "mi5pro":
         )
         st.info(
             "Die Simulation zählt OEM-Doppelklickereignisse und verlangt danach "
-            "den bestätigten Sportmodus. Firmwareintegration und elektrische "
+            "den bestätigten Sportmodus sowie vorher eine unabhängige Absichtsfreigabe. "
+            "Firmwareintegration und elektrische "
             "Displaywirkung sind ungeprüft. Auch der experimentelle "
             "Modus gibt keinen SSM-Firmwareexport frei. Bestehende Speed-Patches "
             "erzeugen keinen zusätzlichen Fahrmodus."

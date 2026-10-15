@@ -1,6 +1,8 @@
 # Aktivierung durch drei getrennte OEM-Doppelklicks
 
-Stand: 14. Oktober 2026. Fortsetzung von Draft-PR #1 nach Commit `6062bd2`.
+Stand: 15. Oktober 2026. Gestennachweis aus `f0109c0`; ergänzt um die
+unabhängige Absichtsfreigabe. Aktuelle Integrationsnachweise und Grenzen:
+[INTEGRATION.md](INTEGRATION.md).
 Diese Spezifikation ersetzt die bisherige Fünffachklick-Aktivierung.
 **SSM bleibt eine Offline-Simulation; Firmwareexport und Flashen bleiben gesperrt.**
 
@@ -66,6 +68,14 @@ Motorcontroller empfangene Quittung.
 
 ## 3. Neue Ereignissimulation und Zeitfenster
 
+**Zusätzliche Voraussetzung:** `grant_activation_intent(now)` erteilt im Modell
+vor der Folge eine unabhängige einmalige Absichtsfreigabe für 6000 ms. Sie ist
+nur mit aktuellem sicherem Sport-/Stillstandssnapshot erhältlich. Drei normale
+Moduswechsel allein aktivieren SSM auch bei eingeschalteter Simulation nicht.
+Die Freigabe wird verbraucht oder bei Unterbrechung/Timeout/Reset widerrufen.
+Ein realer authentifizierter Bedienweg fehlt; es gibt keinen neuen BLE-Befehl.
+Der Grund und die Beweisgrenzen stehen in [INTEGRATION.md](INTEGRATION.md#6-schutz-gegen-unbeabsichtigte-drei-moduswechsel).
+
 `ButtonRecognizer`, Rohpegel-Entprellung und Fünffachklick-Aktivierung wurden
 aus der SSM-Simulation entfernt. `sample(now, event, inputs, ...)` verarbeitet
 einmalig zugestellte OEM-Codes. `None`/0 bedeuten kein Ereignis; boolesche
@@ -74,7 +84,8 @@ eine separat ausführbare, unveränderte Firmwarefunktion.
 
 | Entwurfsparameter | Wert / Wirkung |
 | --- | --- |
-| Mindestabstand zweier Doppelereignisse | 600 ms; zu schnelle Ereignisse starten die SSM-Zählung neu, ihre normale OEM-Aktion bleibt erhalten |
+| Unabhängige Absichtsfreigabe | einmalig, 6000 ms, nie aus normalen Moduswechseln ableiten |
+| Mindestabstand zweier Doppelereignisse | 600 ms; zu schnelle Ereignisse widerrufen die Freigabe, ihre normale OEM-Aktion bleibt erhalten |
 | Maximalabstand zweier Doppelereignisse | 1600 ms |
 | Gesamtfenster | 4000 ms ab erstem Doppelereignis; abgelaufene Folgen werden verworfen |
 | Frist für Modusabschluss | 500 ms nach jeder angeforderten OEM-Modusaktion |
@@ -195,12 +206,14 @@ python -m bwpatcher.ssm_demo
 MI5PRO_FIRMWARE_DIR=/lokal/originale python -m pytest tests -q
 ```
 
-Aktuell **219 bestanden, 0 fehlgeschlagen, 0 übersprungen** mit beiden Originalen.
-Ohne Originale: **172 bestanden, 47 ausdrücklich übersprungen**. Enthalten sind
-107 Ereignis-/Zustandsfälle, 65 Container-/Originalcodefälle, 44 Audit-/Exportfälle
-und drei GUI-/Demofälle. Die bekannte Capstone-`pkg_resources`-Warnung bleibt.
+Aktuell **316 bestanden, 0 fehlgeschlagen, 0 übersprungen** mit beiden Originalen.
+Ohne Originale: **219 bestanden, 97 ausdrücklich übersprungen**. Enthalten sind
+128 Ereignis-/Zustandsfälle, 65 Container-/Originalcodefälle, 76 Integrationsfälle,
+44 Audit-/Exportfälle und drei GUI-/Demofälle. Die bekannte Capstone-`pkg_resources`-Warnung bleibt.
 Die Demo simuliert ihre Modusquittungen ausdrücklich; die Originaltests beziehen
-sie aus ausgeführtem Originalcode. Keine der beiden Prüfarten ist ein Hardwaretest.
+sie aus ausgeführtem Originalcode. Der neue Status-Rückkanal beweist ausdrücklich
+keine angewendete Geschwindigkeitsgrenze; Modell-Tickets bleiben ein abstrakter
+Adaptervertrag. Keine der beiden Prüfarten ist ein Hardwaretest.
 
 Aktuelle strukturierte Nachweise stehen in [BEFUNDE.json](BEFUNDE.json).
 Entwicklungsstufe bleibt 3, kein integrierter SSM-Firmware-Patch und keine

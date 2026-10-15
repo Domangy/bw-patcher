@@ -1,13 +1,16 @@
 # Xiaomi Electric Scooter 5 Pro: SuperSport Mode (SSM)
 
-Stand: 14. Oktober 2026. Untersuchte Ausgangscodebasis: `95a8f339787a1fb6486554d61b573b8e2b688c53`.
+Stand: 15. Oktober 2026. Untersuchte Ausgangscodebasis: `95a8f339787a1fb6486554d61b573b8e2b688c53`.
 Zielgerät laut Auftrag: `xiaomi.scooter.5pro`, Schweizer Ausführung,
 MCU `0007`, BLE `2.7.0_0015`.
 
-**Aktuelle Aktivierung:** drei getrennte OEM-Doppelklicks mit normalen
-Moduswechseln; erst nach bestätigtem dritten Abschluss im Sportmodus SSM.
+**Aktuelle Aktivierung:** unabhängige einmalige Absichtsfreigabe im Modell, dann
+drei getrennte OEM-Doppelklicks mit normalen Moduswechseln; erst nach bestätigtem
+dritten Abschluss im Sportmodus SSM. Der reale Freigabeweg ist noch offen.
 Die Fünffachklick-Aktivierung ist ersetzt. Einzelheiten und Originalcode-Traces
-stehen in [DOPPELKLICK.md](DOPPELKLICK.md).
+stehen in [DOPPELKLICK.md](DOPPELKLICK.md). Die neuen Speicher-, Kontext-,
+Begrenzungs- und Rückkanalnachweise samt notwendigen Hardwaremessungen stehen
+in [INTEGRATION.md](INTEGRATION.md).
 
 **Entwicklungsstufe 3 — Simulation erfolgreich.** Die Zustandsmaschine,
 schreibgeschützte Originalprüfung, Export-Sperre, Offline-Demo und Tests sind
@@ -193,6 +196,8 @@ Es wurden keine Sprünge oder geratenen Befehle injiziert.
 | `bwpatcher/ssm_firmware.py` | Schreibgeschützter Audit, strikte Originalidentifikation, begrenzte CRC-Bereiche und reproduzierbare Disassemblierung |
 | `bwpatcher/mi5pro_research.py` | Begrenzte Bee2-/LZMA-Analyse, Hashes, Codefenster und nicht freigegebene Hook-Kandidaten |
 | `bwpatcher/mi5pro_emulator.py` | Kontrollierte Ausführung ausgewählter Originalroutinen mit emulierter Peripherie |
+| `bwpatcher/mi5pro_integration.py` | Originale Speicherinitialisierung, Hook-Kontexte, Begrenzungsauswahl und Status-Rückkanal; strikter lesender Statusbeobachter |
+| `tests/test_mi5pro_integration.py` | 76 neue Integrationsfälle, davon 50 mit Originalen |
 | `tests/test_mi5pro_research.py` | Neue Container-, Originalcode-, Anzeige- und BLE-/MCU-Feldprüfungen |
 | `bwpatcher/ssm_demo.py` | Deterministische Offline-Demo einschliesslich Fahrt, vorgemerkter Deaktivierung und Neustart |
 | `bwpatcher/utils.py` | SSM-Anforderungen vor erster Patchaktion abbrechen, auch gemischt mit vorhandenen Patches |
@@ -228,6 +233,14 @@ mindestens 500 ms bestätigter Stillstand. Das sind Entwurfswerte, keine
 Hardwaremessungen. Normale OEM-Aktionen werden nicht bis zum dritten Ereignis
 zurückgehalten.
 
+Drei gewöhnliche Moduswechsel sind anhand derselben Eingaben nicht von der
+Aktivierungsgeste unterscheidbar. Deshalb verlangt das Modell zuerst
+`grant_activation_intent(now)`: eine unabhängige, einmalige 6000-ms-Freigabe
+aus einem aktuellen sicheren Sport-/Stillstandssnapshot. Ohne sie bleiben alle
+drei Doppelklicks normale Moduswechsel. Sie wird bei Aktivierung verbraucht und
+bei Unterbrechung, Fehler, Timeout oder Reset widerrufen. Das ist keine
+authentifizierte App-/BLE-Funktion; der reale Bedienweg bleibt offen.
+
 Aktivierung bleibt standardmässig deaktiviert. Bei eingeschalteter Simulation
 müssen während der Folge Betrieb, bekannte gültige Telemetrie, Geschwindigkeit
 exakt null, losgelassenes Gas, Fehlerfreiheit und entsperrter Zustand vorliegen.
@@ -240,15 +253,18 @@ Die zusätzlichen Kontext-/Quittungsfelder sind ein Vertrag für einen späteren
 Adapter. Der vollständige reale Reset-, Tastenbeginn-, Scheduler- und
 Motorcontroller-Rückmeldepfad ist damit nicht implementiert. Die Demo kennzeichnet
 simulierte Quittungen, die erweiterten Originaltests nutzen ausgeführte
-Original-Moduswechsel, BLE-Framebuilder und MCU-Feldkonsument. Beide bleiben
-Offline-Prüfungen ohne angeschlossenen Scooter.
+Original-Moduswechsel, BLE-Framebuilder und MCU-Feldkonsument. Neu sind auch
+Original-Statusbuilder und BLE-Empfänger ausgeführt. Ihr Modusecho ist weder
+einem Ticket zugeordnet noch Beleg einer angewendeten Geschwindigkeitsgrenze.
+Die 500-ms-Frist ist keine gemessene Controllerzusage. Beide Prüfarten bleiben
+offline ohne angeschlossenen Scooter.
 
 ### Zustand, Rückkehr und Anzeige
 
 ```mermaid
 stateDiagram-v2
     [*] --> Normal
-    Normal --> SuperSport: 3 OEM-Doppelklicks, dritter Abschluss Sport, Stillstand
+    Normal --> SuperSport: Absichtsfreigabe, 3 OEM-Doppelklicks, dritter Abschluss Sport, Stillstand
     SuperSport --> Normal: 1 Doppelklick im bestätigten Stillstand
     SuperSport --> RueckkehrVorgemerkt: Doppelklick während Fahrt oder Sicherheitsereignis
     RueckkehrVorgemerkt --> Normal: Bestätigter Stillstand
@@ -312,12 +328,12 @@ Die vollständige aktuelle Suite wurde mit beiden Originaldateien ausgeführt:
 
 | Testumfang | Ergebnis |
 | --- | --- |
-| Alle Tests, lokale Originale und optionale Forschungsabhängigkeiten | **219 bestanden, 0 fehlgeschlagen, 0 übersprungen** |
-| Alle Tests ohne proprietäre Originaldateien | **172 bestanden, 47 Originalfälle übersprungen** |
+| Alle Tests, lokale Originale und optionale Forschungsabhängigkeiten | **316 bestanden, 0 fehlgeschlagen, 0 übersprungen** |
+| Alle Tests ohne proprietäre Originaldateien | **219 bestanden, 97 Originalfälle übersprungen** |
 | Hardwaretests | 0 |
 
-Enthalten sind 107 Ereignis-/Zustandsfälle, 65 Container-/Originalcodefälle,
-44 Audit-/Exportsperrfälle und drei GUI-/Demofälle. Python 3.12, Unicorn 2.1.4,
+Enthalten sind 128 Ereignis-/Zustandsfälle, 65 Container-/Originalcodefälle,
+76 neue Integrationsfälle, 44 Audit-/Exportsperrfälle und drei GUI-/Demofälle. Python 3.12, Unicorn 2.1.4,
 Capstone 4.0.2, pytest 8 und Streamlit AppTest. Die bekannte Capstone-
 `pkg_resources`-Abkündigungswarnung bleibt; Setuptools ist 80.9.0.
 
@@ -328,14 +344,17 @@ Deaktivierung, vorgemerkte Rückkehr, Neustart, Displayfelder und 6000
 Zufallssamples mit Bewegung ohne SSM-Aktivierung. Die Originalprüfungen umfassen
 LZMA-/Hash-/Grenzfälle, tatsächliche Klassifikator- und Verteilerfunktionen,
 Licht-GPIO im emulierten Speicher, ursprüngliches Modussperrbyte sowie
-BLE-/MCU-Feldvergleiche. Einzelheiten stehen in [DOPPELKLICK.md](DOPPELKLICK.md).
+BLE-/MCU-Feldvergleiche. Neu geprüft sind Speicherinitialisierung, sieben
+Präfixauswahlen, der unveränderte zusätzliche Clamp, ausgewählte vollständige
+Registerkontexte, der Originalstatuspfad und Gegenbeispiele zu einer
+Geschwindigkeitsquittung. Einzelheiten stehen in [INTEGRATION.md](INTEGRATION.md).
 
 Die sechs bisherigen Originaltests inklusive rein im RAM geprüfter alter
 SLS-/SLD-Patches und Checksum-Behandlung sind im Gesamtlauf enthalten. Sie
 bedeuten weiterhin keine Sicherheitsfreigabe dieser alten Speed-Patches.
 CLI-/GUI- und Mischpatchtests bestätigen die unveränderte SSM-Exportsperre.
 
-Die früheren Ergebnisse 114/108 und der gezielte Fortsetzungslauf mit 55 Fällen
+Die früheren Ergebnisse 114/108, 219/172 und der Fortsetzungslauf mit 55 Fällen
 sind historische Nachweise vorheriger Stände. Die dort erhobenen Python-
 Abdeckungswerte gelten nicht für die aktuelle Ereignissimulation. Es wurden
 keine integrierten SSM-Einsprünge, keine elektrische Segmentanzeige, keine
@@ -369,37 +388,33 @@ für öffentliche Strassen in der Schweiz.
 
 ## E. Noch benötigte Nachweise und nächste Schritte
 
-Die beiden Originaldateien sind vorhanden; eine erneute Bereitstellung ist
-nicht erforderlich. Die [detaillierte Trennung der Hindernisse](FORTSETZUNG.md#8-werkzeuge-prüfungen-und-verbleibende-arbeit)
-ist massgebend für die Fortsetzung.
+Die beiden Originaldateien sind vorhanden. Die massgebende aktuelle Trennung
+steht in [INTEGRATION.md](INTEGRATION.md#8-gelöste-und-offene-hindernisse).
 
-Noch softwareseitig offen:
+Softwareseitig rekonstruiert sind die BLE-Initialisierungsabschnitte, die
+originale MCU-Dekompression, die sieben Präfix-/Begrenzungspaare und der
+zusätzliche unveränderte Begrenzungsvergleich. Originaler Statusbuilder und
+BLE-Empfänger liefern ein separates Modusecho. Es bestätigt nachweislich keine
+angewendete Grenze; selbst verschiedene Originalgrenzen liefern identische
+Frames. Ein strikter lesender Beobachter weist zudem kurze Frames zurück,
+die der originale generische Parser noch an seinen festen Statushandler gibt.
 
-1. Vollständige Referenz-/Kontrollflussanalyse, Flash-/RAM-Reservierung,
-   Initialisierung, Live-Register und Kontextverträge der Hook-Kandidaten.
-2. Integration eines Zählers vorhandener OEM-Doppelereignisse und bestätigter
-   Original-Modusabschlüsse bei Erhalt von Langdruck, Reset und sonstigen
-   Originalkombinationen. Ein neuer Rohklassifikator ist nicht mehr nötig.
-3. Vollständiger Kommunikationsvertrag für SSM zwischen BLE und MCU,
-   einschliesslich Fehlern, Quittierung, Telemetriefrische und Neustart.
-4. Normalwert aus Region/NVM erhalten und sichere Umschaltstelle ohne Entfernung
-   der bestehenden Begrenzungsprüfung nachweisen. Originale Update- und
-   Vertrauensprüfungen dürfen nicht umgangen werden.
+Noch softwareseitig offen sind vollständiger Kontrollfluss und Kontextvertrag,
+Flash-/RAM-/Taskstackbesitz, ein atomarer SSM-Adapter, kohärenter angewendeter
+Reglerzustand, sichere Begrenzungsumschaltung und unveränderte Update-/
+Vertrauensanforderungen. Die zusätzliche einmalige Absichtsfreigabe ist im
+Modell geprüft, ihr authentifizierter realer Bedienweg fehlt.
 
-Zwingend auf echter Hardware zu messen:
+Die [konkrete Messliste](INTEGRATION.md#9-konkret-notwendige-hardwaremessungen)
+verlangt reale PCB-/NVM-Identität, Heap-/Taskstackreserve, IRQ-/Tasterlatenzen,
+passive UART-Aufzeichnungen beider Richtungen samt Zeitbasis, Verlust und
+Reset, rohe Geschwindigkeitskalibrierung und getrennten Nachweis des
+angewendeten Reglerwerts. Physische Displaywirkung und Warnpriorität sowie
+Strom-/Brems-/Rekuperations-/Temperatur-/Batterieprioritäten unter Last und
+Xiaomi-Home-Verhalten benötigen ebenfalls echte Hardware.
 
-1. Tatsächliche Dashboard-/Controllerrevision, Tasterpegel, Prellen und
-   Scheduler-/Ende-zu-Ende-Latenz unter konkurrierenden Ereignissen.
-2. Physische UART-Leitungen, Pegel, Baudrate, Übertragungsfehler und Zeitverhalten.
-3. Displaytreiber, Segmentzuordnung, dauerhaftes gemeinsames Leuchten der drei
-   Piktogramme, Helligkeit/Strom und Vorrang von Warn-/Fehleranzeigen.
-4. Laufzeit unter Last, reale Stillstands-/Geschwindigkeitswerte, sichere
-   Übergänge, Strom-/Temperatur-/Brems-/Schutzreaktionen und Xiaomi-Home-Verhalten.
-
-Ein Hardwaretestaufbau braucht eine getrennte ausdrückliche Autorisierung.
-Zuerst kommen passive Tasten-/UART-/Displaymessungen und Prüfungen ohne Antrieb;
-ein Fahrtest allein ersetzt keine Schutzprüfung. Es wird nicht automatisch
-geflasht. Die neuen Softwarebelege ersetzen keine dieser Messungen.
+Keine dieser Messungen wurde durchgeführt. Die Exportsperre bleibt aktiv;
+es wurde keine SSM-Firmware erzeugt und kein Flashvorgang ausgeführt.
 
 ## F. Entwicklungsstatus und Quellen
 

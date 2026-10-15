@@ -24,12 +24,14 @@ READY = Inputs(
 
 
 class Rig:
-    def __init__(self, *, enabled=True, inputs=READY, timing=Timing()):
+    def __init__(self, *, enabled=True, inputs=READY, timing=Timing(), arm=True):
         self.model = SuperSportSimulation(enabled=enabled, timing=timing)
         self.inputs = inputs
         self.now = 0
         self.actions = self.model.sample(0, None, inputs)
         self.wait(600)
+        if arm:
+            self.model.grant_activation_intent(self.now)
 
     def send(self, event=None, *, delay=10, ack=None, dashboard=False, **changes):
         self.now += delay
@@ -59,6 +61,7 @@ class Rig:
         return result
 
     def activate(self):
+        assert self.model.grant_activation_intent(self.now)
         for _ in range(3):
             self.double()
         assert self.model.state is State.ACTIVE
@@ -160,7 +163,7 @@ def test_non_double_events_interrupt_activation_without_being_swallowed(event):
     rig.send(event)
     rig.double()
     assert Action.ACTIVATE not in rig.actions
-    assert rig.model.double_count == 1
+    assert rig.model.double_count == 0
 
 
 def test_dense_six_click_original_trace_is_not_reinterpreted_as_ssm():
@@ -172,7 +175,7 @@ def test_dense_six_click_original_trace_is_not_reinterpreted_as_ssm():
     assert Action.ACTIVATE not in rig.actions
     assert Action.OEM_EVENT in rig.actions
     assert rig.actions.count(Action.NEXT_MODE) == 3
-    assert rig.model.double_count == 1
+    assert rig.model.double_count == 0
 
 
 @pytest.mark.parametrize('gap,valid', [(599, False), (600, True), (1600, True), (1601, False)])
@@ -230,7 +233,7 @@ def test_unsafe_interval_clears_whole_partial_sequence(changes):
     rig.wait(600, **{key: getattr(READY, key) for key in changes})
     rig.double()
     assert Action.ACTIVATE not in rig.actions
-    assert rig.model.double_count == 1
+    assert rig.model.double_count == 0
 
 
 @pytest.mark.parametrize('kind', ['fault', 'throttle', 'dashboard', 'single'])
@@ -449,3 +452,85 @@ def test_random_oem_events_while_moving_never_activate():
         actions = model.sample(now, event, replace(READY, speed_mm_s=rng.randint(1, 9000)))
         assert Action.ACTIVATE not in actions
         assert model.state is State.NORMAL
+
+
+def test_three_ordinary_stock_mode_changes_never_imply_activation_intent():
+    rig = Rig(arm=False)
+    for _ in range(3):
+        rig.double()
+    assert rig.inputs.mode is Mode.SPORT
+    assert rig.actions == [Action.NEXT_MODE] * 3
+    assert rig.model.state is State.NORMAL and rig.model.speed_override_kmh is None
+    rig.send(1)
+    assert rig.actions[-1] is Action.LIGHT
+    rig.activate()  # Gleiche Ereignisfolge, aber zusätzliche unabhängige Absicht.
+
+
+def test_activation_intent_is_consumed_and_not_reused_after_exit():
+    rig = Rig()
+    rig.activate()
+    rig.double()
+    assert rig.actions == [Action.DEACTIVATE]
+    rig.actions.clear()
+    for _ in range(3):
+        rig.double()
+    assert rig.actions == [Action.NEXT_MODE] * 3
+    assert rig.model.state is State.NORMAL
+
+
+@pytest.mark.parametrize('elapsed,counts', [(999, 1), (1000, 1), (1001, 0)])
+def test_independent_intent_expiry_does_not_delay_normal_double_action(elapsed, counts):
+    rig = Rig(timing=Timing(intent_ms=1000))
+    assert rig.send(2, delay=elapsed) == [Action.NEXT_MODE]
+    assert rig.model.double_count == counts
+
+
+def test_authorization_after_unconfirmed_mode_request_is_refused():
+    rig = Rig(arm=False)
+    rig.double(ack=False)
+    assert not rig.model.grant_activation_intent(rig.now)
+    rig.confirm()
+    assert rig.model.double_count == 0
+
+
+@pytest.mark.parametrize('changes', [
+    {'fault': True}, {'throttle_released': False}, {'locked': True},
+    {'speed_mm_s': 1}, {'telemetry_valid': False}, {'oem_reserved': None},
+    {'mode': Mode.DRIVE}, {'mode': Mode.WALK},
+])
+def test_intent_cannot_be_issued_from_unsafe_or_wrong_mode_snapshot(changes):
+    rig = Rig(arm=False, inputs=replace(READY, **changes))
+    assert not rig.model.grant_activation_intent(rig.now)
+    assert rig.model.double_count == 0
+
+
+@pytest.mark.parametrize('bad', [-1, 0, True, 601, 1.5])
+def test_intent_requires_the_current_processed_snapshot_timestamp(bad):
+    rig = Rig(arm=False)
+    with pytest.raises(ValueError):
+        rig.model.grant_activation_intent(bad)
+    for _ in range(3):
+        rig.double()
+    assert Action.ACTIVATE not in rig.actions
+
+
+def test_fault_after_authorization_requires_new_intent_even_after_recovery():
+    rig = Rig()
+    rig.send(fault=True)
+    rig.wait(600, fault=False)
+    for _ in range(3):
+        rig.double()
+    assert Action.ACTIVATE not in rig.actions
+    rig.activate()
+
+
+def test_reset_discards_unused_intent_before_any_key_events():
+    rig = Rig()
+    rig.model.reset()
+    rig.now = 0
+    rig.model.sample(0, None, READY)
+    rig.wait(600)
+    for _ in range(3):
+        rig.double()
+    assert rig.model.state is State.NORMAL
+    assert Action.ACTIVATE not in rig.actions

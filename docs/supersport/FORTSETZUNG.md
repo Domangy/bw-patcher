@@ -6,7 +6,11 @@ Stand: 14. Oktober 2026. Fortsetzung von Draft-PR #1 auf Basis von
 Die ursprünglichen 55 Testergebnisse unten dokumentieren den Stand `6062bd2`.
 Die aktuelle Aktivierung verwendet drei getrennte OEM-Doppelklicks; neue
 Verteiler-/Lichtnachweise und der vollständige Testlauf stehen in
-[DOPPELKLICK.md](DOPPELKLICK.md). Container- und Adressbefunde bleiben gültig.
+[DOPPELKLICK.md](DOPPELKLICK.md). Container- und Adressbefunde bleiben gültig. Die aktuelle Fortsetzung vom
+15. Oktober zu Speicherbelegung, Hook-Kontexten, originaler Begrenzungsauswahl,
+Status-Rückkanal und unabhängiger Absichtsfreigabe steht in
+[INTEGRATION.md](INTEGRATION.md); dort stehen auch der aktuelle Gesamttest und
+die konkret notwendigen Hardwaremessungen.
 
 **Neue Nachweise:** Das komprimierte BLE-APP ist vollständig lesbar. Der
 ursprüngliche GPIO-/Tastenpfad und die getrennte Display-Bitmap sind lokalisiert.

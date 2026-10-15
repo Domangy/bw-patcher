@@ -1,6 +1,6 @@
 {
-  "schema_version": 2,
-  "date": "2026-10-14",
+  "schema_version": 3,
+  "date": "2026-10-15",
   "scope": "Metadaten und isolierte Originalcode-Ausführung; keine Firmwareausgabe/Hardwarefreigabe",
   "originals": {
     "mcu": {
@@ -706,22 +706,25 @@
   },
   "verification": {
     "full_suite": {
-      "tests": 219,
+      "tests": 316,
+      "passed": 316,
       "failures": 0,
       "errors": 0,
       "skipped": 0
     },
     "without_originals": {
-      "tests": 219,
+      "tests": 316,
+      "passed": 219,
       "failures": 0,
       "errors": 0,
-      "skipped": 47
+      "skipped": 97
     },
     "cases": {
-      "event_simulation": 107,
+      "event_simulation": 128,
       "original_research": 65,
       "firmware_and_export": 44,
-      "ui_and_demo": 3
+      "ui_and_demo": 3,
+      "integration_research": 76
     },
     "hardware_tests": 0,
     "unicorn_version": "2.1.4",
@@ -738,9 +741,14 @@
       "double_gap_ms": 1600,
       "sequence_ms": 4000,
       "confirm_ms": 500,
-      "standstill_ms": 500
+      "standstill_ms": 500,
+      "intent_ms": 6000
     },
     "timing_status": "Entwurfswerte, Hardware ungeprüft",
-    "normal_limit": "Unveränderten Original-/Regionswert verwenden, Zielgerät laut Auftrag 20 km/h"
-  }
+    "normal_limit": "Unveränderten Original-/Regionswert verwenden, Zielgerät laut Auftrag 20 km/h",
+    "independent_intent_required": true,
+    "intent_implementation": "Nur lokale Modell-API, realer authentifizierter Bedienweg offen",
+    "mode_ack_status": "Abstrakter Adaptervertrag; 61/30-Echo bestätigt keine angewendete Geschwindigkeitsgrenze"
+  },
+  "integration_evidence_file": "INTEGRATION_BEFUNDE.json"
 }
