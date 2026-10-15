@@ -10,7 +10,9 @@ Verteiler-/Lichtnachweise und der vollständige Testlauf stehen in
 15. Oktober zu Speicherbelegung, Hook-Kontexten, originaler Begrenzungsauswahl,
 Status-Rückkanal und unabhängiger Absichtsfreigabe steht in
 [INTEGRATION.md](INTEGRATION.md); dort stehen auch der aktuelle Gesamttest und
-die konkret notwendigen Hardwaremessungen.
+die konkret notwendigen Hardwaremessungen. Die weitere Fortsetzung ab
+`f940ba7` zu Bremse und Regler steht in
+[BREMSE_REGLER_GRENZEN.md](BREMSE_REGLER_GRENZEN.md).
 
 **Neue Nachweise:** Das komprimierte BLE-APP ist vollständig lesbar. Der
 ursprüngliche GPIO-/Tastenpfad und die getrennte Display-Bitmap sind lokalisiert.

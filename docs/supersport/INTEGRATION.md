@@ -15,6 +15,11 @@ SSM-Freigabe abgeleitet. Es gibt weiterhin keinen integrierten Firmware-Patch,
 keinen reservierten SSM-Speicher und keinen zur Injektion freigegebenen Hook.
 Die Exportsperre bleibt bestehen; kein Flashvorgang wurde ausgeführt.
 
+**Historischer Teststand dieses Berichts: Commit `f940ba7`, 316 Fälle.**
+Die Fortsetzung mit 384 Fällen und konkreter Hardwaregrenze steht in
+[BREMSE_REGLER_GRENZEN.md](BREMSE_REGLER_GRENZEN.md). Die nachstehenden
+Originalbefunde bleiben gültig.
+
 ## 1. Neue Werkzeuge und Reichweite
 
 `bwpatcher.mi5pro_integration` ergänzt die vorhandenen Emulatoren. Alle
@@ -278,7 +283,7 @@ MI5PRO_FIRMWARE_DIR=/lokal/originale python -m pytest tests -q
 python -m pytest tests -q
 ```
 
-Aktuell **316 bestanden, 0 fehlgeschlagen, 0 übersprungen** mit Originalen.
+Am dokumentierten Ausgangsstand **316 bestanden, 0 fehlgeschlagen, 0 übersprungen** mit Originalen.
 Ohne Originale **219 bestanden, 97 ausdrücklich übersprungen**. Enthalten sind
 128 Zustands-/Ereignisfälle, 65 bisherige Originalforschungsfälle, 76 neue
 Integrationsfälle, 44 Audit-/Exportsperrfälle und drei UI-/Demofälle.

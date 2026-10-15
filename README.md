@@ -102,7 +102,11 @@ nächsten Schritten: [SSM-Entwicklungsbericht](docs/supersport/BERICHT.md) und
 [Integrationsanalyse](docs/supersport/INTEGRATION.md) belegt Speicherabschnitte,
 originale Begrenzungswahl und Status-Rückkanal: Das Modusecho bestätigt keine
 angewendete Geschwindigkeitsgrenze. Vollständige Hook-Verträge und sichere
-Speicherreservierung fehlen weiterhin.
+Speicherreservierung fehlen weiterhin. Die neue
+[Brems-/Regleranalyse](docs/supersport/BREMSE_REGLER_GRENZEN.md) verfolgt den
+Bremswert bis zum MCU-Zweig und führt die gesamte Grenz-/Reglerfunktion aus.
+Bremspegel beweist keine Aktivierungsabsicht; auch interne Sollwerte bleiben
+im Modusecho unsichtbar. Kein SSM-Adapter ist freigegeben.
 
 ```bash
 # Reine Offline-Demo, ohne Firmware oder angeschlossenen Scooter
@@ -116,6 +120,7 @@ poetry install --with research
 python -m bwpatcher.mi5pro_research /lokal/ble_2.7.0_0015.bin --evidence
 python -m bwpatcher.mi5pro_emulator --ble /lokal/ble_2.7.0_0015.bin --mcu /lokal/mcu_0007.bin
 python -m bwpatcher.mi5pro_integration --ble /lokal/ble_2.7.0_0015.bin --mcu /lokal/mcu_0007.bin
+python -m bwpatcher.mi5pro_constraints --ble /lokal/ble_2.7.0_0015.bin --mcu /lokal/mcu_0007.bin
 
 # Neue Analysefälle, mit lokalen Originalen zusätzlich Originalcodeprüfungen
 MI5PRO_FIRMWARE_DIR=/lokal/originale python -m pytest tests/test_mi5pro_research.py -q

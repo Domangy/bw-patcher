@@ -10,7 +10,9 @@ dritten Abschluss im Sportmodus SSM. Der reale Freigabeweg ist noch offen.
 Die Fünffachklick-Aktivierung ist ersetzt. Einzelheiten und Originalcode-Traces
 stehen in [DOPPELKLICK.md](DOPPELKLICK.md). Die neuen Speicher-, Kontext-,
 Begrenzungs- und Rückkanalnachweise samt notwendigen Hardwaremessungen stehen
-in [INTEGRATION.md](INTEGRATION.md).
+in [INTEGRATION.md](INTEGRATION.md). Die aktuelle Fortsetzung ab `f940ba7`
+zu Bremsinformation, vollständiger Reglerfunktion, Stackauftrag und
+Analysegrenzen steht in [BREMSE_REGLER_GRENZEN.md](BREMSE_REGLER_GRENZEN.md).
 
 **Entwicklungsstufe 3 — Simulation erfolgreich.** Die Zustandsmaschine,
 schreibgeschützte Originalprüfung, Export-Sperre, Offline-Demo und Tests sind
@@ -197,6 +199,8 @@ Es wurden keine Sprünge oder geratenen Befehle injiziert.
 | `bwpatcher/mi5pro_research.py` | Begrenzte Bee2-/LZMA-Analyse, Hashes, Codefenster und nicht freigegebene Hook-Kandidaten |
 | `bwpatcher/mi5pro_emulator.py` | Kontrollierte Ausführung ausgewählter Originalroutinen mit emulierter Peripherie |
 | `bwpatcher/mi5pro_integration.py` | Originale Speicherinitialisierung, Hook-Kontexte, Begrenzungsauswahl und Status-Rückkanal; strikter lesender Statusbeobachter |
+| `bwpatcher/mi5pro_constraints.py` | Neuer Brems-/Regler-/Stacknachweis und ausdrücklich abbrechende Motorperipherieproben |
+| `tests/test_mi5pro_constraints.py` | 68 neue Fälle, davon 54 mit Originalen |
 | `tests/test_mi5pro_integration.py` | 76 neue Integrationsfälle, davon 50 mit Originalen |
 | `tests/test_mi5pro_research.py` | Neue Container-, Originalcode-, Anzeige- und BLE-/MCU-Feldprüfungen |
 | `bwpatcher/ssm_demo.py` | Deterministische Offline-Demo einschliesslich Fahrt, vorgemerkter Deaktivierung und Neustart |
@@ -328,12 +332,13 @@ Die vollständige aktuelle Suite wurde mit beiden Originaldateien ausgeführt:
 
 | Testumfang | Ergebnis |
 | --- | --- |
-| Alle Tests, lokale Originale und optionale Forschungsabhängigkeiten | **316 bestanden, 0 fehlgeschlagen, 0 übersprungen** |
-| Alle Tests ohne proprietäre Originaldateien | **219 bestanden, 97 Originalfälle übersprungen** |
+| Alle Tests, lokale Originale und optionale Forschungsabhängigkeiten | **384 bestanden, 0 fehlgeschlagen, 0 übersprungen** |
+| Alle Tests ohne proprietäre Originaldateien | **233 bestanden, 151 Originalfälle übersprungen** |
 | Hardwaretests | 0 |
 
 Enthalten sind 128 Ereignis-/Zustandsfälle, 65 Container-/Originalcodefälle,
-76 neue Integrationsfälle, 44 Audit-/Exportsperrfälle und drei GUI-/Demofälle. Python 3.12, Unicorn 2.1.4,
+76 Integrationsfälle, 68 neue Brems-/Regler-/Kontextfälle,
+44 Audit-/Exportsperrfälle und drei GUI-/Demofälle. Python 3.12, Unicorn 2.1.4,
 Capstone 4.0.2, pytest 8 und Streamlit AppTest. Die bekannte Capstone-
 `pkg_resources`-Abkündigungswarnung bleibt; Setuptools ist 80.9.0.
 
@@ -347,14 +352,18 @@ Licht-GPIO im emulierten Speicher, ursprüngliches Modussperrbyte sowie
 BLE-/MCU-Feldvergleiche. Neu geprüft sind Speicherinitialisierung, sieben
 Präfixauswahlen, der unveränderte zusätzliche Clamp, ausgewählte vollständige
 Registerkontexte, der Originalstatuspfad und Gegenbeispiele zu einer
-Geschwindigkeitsquittung. Einzelheiten stehen in [INTEGRATION.md](INTEGRATION.md).
+Geschwindigkeitsquittung. Neu hinzu kommen der Bremsweg bis zum MCU-Originalzweig,
+die vollständige Reglerfunktion, Rampen-/Bremspriorität, verschiedene Sollwerte bei
+identischem Status und der 8192-Byte-App-Stackauftrag. Einzelheiten und die
+bewusst gesetzten Peripheriegrenzen stehen in
+[BREMSE_REGLER_GRENZEN.md](BREMSE_REGLER_GRENZEN.md).
 
 Die sechs bisherigen Originaltests inklusive rein im RAM geprüfter alter
 SLS-/SLD-Patches und Checksum-Behandlung sind im Gesamtlauf enthalten. Sie
 bedeuten weiterhin keine Sicherheitsfreigabe dieser alten Speed-Patches.
 CLI-/GUI- und Mischpatchtests bestätigen die unveränderte SSM-Exportsperre.
 
-Die früheren Ergebnisse 114/108, 219/172 und der Fortsetzungslauf mit 55 Fällen
+Die früheren Ergebnisse 114/108, 219/172, 316/219 und der Fortsetzungslauf mit 55 Fällen
 sind historische Nachweise vorheriger Stände. Die dort erhobenen Python-
 Abdeckungswerte gelten nicht für die aktuelle Ereignissimulation. Es wurden
 keine integrierten SSM-Einsprünge, keine elektrische Segmentanzeige, keine
@@ -389,7 +398,7 @@ für öffentliche Strassen in der Schweiz.
 ## E. Noch benötigte Nachweise und nächste Schritte
 
 Die beiden Originaldateien sind vorhanden. Die massgebende aktuelle Trennung
-steht in [INTEGRATION.md](INTEGRATION.md#8-gelöste-und-offene-hindernisse).
+steht in [BREMSE_REGLER_GRENZEN.md](BREMSE_REGLER_GRENZEN.md#7-gelöst-softwareseitig-offen-hardware-erforderlich).
 
 Softwareseitig rekonstruiert sind die BLE-Initialisierungsabschnitte, die
 originale MCU-Dekompression, die sieben Präfix-/Begrenzungspaare und der
@@ -403,9 +412,17 @@ Noch softwareseitig offen sind vollständiger Kontrollfluss und Kontextvertrag,
 Flash-/RAM-/Taskstackbesitz, ein atomarer SSM-Adapter, kohärenter angewendeter
 Reglerzustand, sichere Begrenzungsumschaltung und unveränderte Update-/
 Vertrauensanforderungen. Die zusätzliche einmalige Absichtsfreigabe ist im
-Modell geprüft, ihr authentifizierter realer Bedienweg fehlt.
+Modell geprüft, ihr authentifizierter realer Bedienweg fehlt. Bremspegel allein
+belegt keine Absicht: Auch damit funktionieren normale Moduszyklen. Der Bremswert
+ist bis in einen MCU-Bremszweig verfolgt; Frische und einige Unterdrückungszustände
+sind ungeklärt. Ein originaler Brems-Analogfehlerpfad bis zur
+Unterdrückung des übertragenen Werts ist nun zusätzlich ausgeführt. Der App-Task
+fordert 8192 Byte Stack an; freie Reserve ist damit nicht belegt.
+Regler-Sollwert und Ausgang sind separat beobachtbar, fehlen aber
+in der bisherigen Statusquittung. Zwei Motorpfade stoppen am unbekannten
+Timerregister `0x40012c54`; ein vollständiges Peripheriemodell wird nicht erfunden.
 
-Die [konkrete Messliste](INTEGRATION.md#9-konkret-notwendige-hardwaremessungen)
+Die [konkrete Messliste](BREMSE_REGLER_GRENZEN.md#7-gelöst-softwareseitig-offen-hardware-erforderlich)
 verlangt reale PCB-/NVM-Identität, Heap-/Taskstackreserve, IRQ-/Tasterlatenzen,
 passive UART-Aufzeichnungen beider Richtungen samt Zeitbasis, Verlust und
 Reset, rohe Geschwindigkeitskalibrierung und getrennten Nachweis des

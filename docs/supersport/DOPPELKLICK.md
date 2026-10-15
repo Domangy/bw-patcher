@@ -206,15 +206,18 @@ python -m bwpatcher.ssm_demo
 MI5PRO_FIRMWARE_DIR=/lokal/originale python -m pytest tests -q
 ```
 
-Aktuell **316 bestanden, 0 fehlgeschlagen, 0 übersprungen** mit beiden Originalen.
-Ohne Originale: **219 bestanden, 97 ausdrücklich übersprungen**. Enthalten sind
+Aktuell **384 bestanden, 0 fehlgeschlagen, 0 übersprungen** mit beiden Originalen.
+Ohne Originale: **233 bestanden, 151 ausdrücklich übersprungen**. Enthalten sind
 128 Ereignis-/Zustandsfälle, 65 Container-/Originalcodefälle, 76 Integrationsfälle,
-44 Audit-/Exportfälle und drei GUI-/Demofälle. Die bekannte Capstone-`pkg_resources`-Warnung bleibt.
+68 neue Brems-/Regler-/Kontextfälle, 44 Audit-/Exportfälle und drei GUI-/Demofälle. Die bekannte Capstone-`pkg_resources`-Warnung bleibt.
 Die Demo simuliert ihre Modusquittungen ausdrücklich; die Originaltests beziehen
 sie aus ausgeführtem Originalcode. Der neue Status-Rückkanal beweist ausdrücklich
 keine angewendete Geschwindigkeitsgrenze; Modell-Tickets bleiben ein abstrakter
 Adaptervertrag. Keine der beiden Prüfarten ist ein Hardwaretest.
 
+Bremsinformation ist jetzt bis zum MCU-Zweig nachgewiesen; sie ersetzt die
+unabhängige Absichtsfreigabe weiterhin nicht. Ergebnisse und Grenzen stehen in
+[BREMSE_REGLER_GRENZEN.md](BREMSE_REGLER_GRENZEN.md).
 Aktuelle strukturierte Nachweise stehen in [BEFUNDE.json](BEFUNDE.json).
 Entwicklungsstufe bleibt 3, kein integrierter SSM-Firmware-Patch und keine
 Umgehung von Sicherheitsmechanismen.
