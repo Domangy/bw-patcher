@@ -13,7 +13,10 @@ from bwpatcher.mi5pro_mcu_candidate_in_memory import (
     McuResearchCandidate, build_mcu_research_candidate,
 )
 from bwpatcher.mi5pro_research import inspect_ble, AnalysisError
-from bwpatcher.mi5pro_thumb_hook_experimental import compile_hook, HOOK, TX_HOOK, CAVE
+from bwpatcher.mi5pro_thumb_hook_experimental import (
+    compile_hook, HOOK, TX_HOOK, CAVE, CLOCK_HOOK, CLOCK_CODE_OFF,
+    CLOCK_LITERAL_OFF, RAM_CANDIDATE,
+)
 
 
 @dataclass(frozen=True)
@@ -38,6 +41,9 @@ def build_dual_research_candidate(
         (HOOK, staged.branch),
         (TX_HOOK, staged.tx_branch),
         (CAVE, staged.thumb + staged.tx_thumb),
+        (CLOCK_HOOK, staged.clock_branch),
+        (CLOCK_CODE_OFF, staged.clock_thumb),
+        (CLOCK_LITERAL_OFF, RAM_CANDIDATE.to_bytes(4,"little")),
     ):
         if app_check[offset:offset + len(expected)] != expected:
             raise AnalysisError("BLE ARM-Thumb-Code im neu aufgebauten Paket inkonsistent.")
