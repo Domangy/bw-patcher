@@ -144,7 +144,10 @@ poetry run python -m bwpatcher.ssm_readiness --output originale/SSM_STATUS.json
 
 Das Werkzeug erkennt exakt die untersuchten Originaldateien MCU `0007` und
 BLE `2.7.0_0015`, prueft ihre Integritaet und dokumentiert alle weiterhin
-offenen Freigabebedingungen. Es erzeugt **keine Firmware**, schreibt nichts auf
+offenen Freigabebedingungen. Ein authentifizierter Xiaomi-OTA-Download kann
+mit `poetry run python -m bwpatcher.mi5pro_cloud --input <OTA.bin> --output originale/ble_2.7.0_0015.bin`
+nur bei exakter Hash- und Strukturuebereinstimmung als Forschungsoriginal
+extrahiert werden. Mehr Details: [Xiaomi-OTA-Herkunft und Grenzen](docs/supersport/XIAOMI_OTA_REFERENZ.md). Es erzeugt **keine Firmware**, schreibt nichts auf
 den Scooter und laesst das bestehende SSM-Exportverbot unveraendert.
 
 ## License

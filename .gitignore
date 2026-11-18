@@ -178,3 +178,6 @@ AGENTS.md
 # Proprietäre lokale Forschungsdateien niemals veröffentlichen.
 /firmware-private/
 /firmware-originals/
+
+# Local proprietary original firmware images and offline analysis reports.
+/originale/
