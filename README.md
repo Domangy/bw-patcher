@@ -161,6 +161,12 @@ Installer/Flash-Pfad bleibt gesperrt. Die [experimentelle BLE-Rekompression](doc
 prueft im Arbeitsspeicher bereits das Wiederverpacken veraenderter APP-Bytes.
 Sie erzeugt **keine flashbare Datei**; Herstellerakzeptanz und Hardwaretests fehlen.
 
+Ein [nativer Super-Sport-Prototyp](docs/supersport/NATIVER_SSM_PROTOTYP_2026-11-18.md)
+fuehrt inzwischen eigene ARM-Thumb-Hooks fuer drei Doppelklicks, einen
+weiteren Doppelklick zum Deaktivieren, BLE-UART-Frames und einen
+**nur im Emulator vorhandenen** MCU-Modus-4-Reglerpfad aus.
+Der Softwarebeleg ist **keine** getestete oder installierbare Scooter-Firmware.
+
 Unter Windows startet die Offline-Testserie Pytest mit `-p no:faulthandler`,
 weil der Unicorn-2.1.4-Emulator und Python-`faulthandler` auf Windows einen
 bekannten Exception-Handler-Konflikt haben:
