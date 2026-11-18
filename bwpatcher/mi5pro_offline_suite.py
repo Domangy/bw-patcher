@@ -24,8 +24,11 @@ def file_hashes(folder: Path) -> dict[str, str | None]:
     return result
 
 
-def run_suite(root: Path = ROOT, *, skip_tests: bool = False) -> tuple[dict, int]:
-    original_dir = root / "originale"
+def run_suite(
+    root: Path = ROOT, *, skip_tests: bool = False, originals: Path | None = None,
+) -> tuple[dict, int]:
+    """Check local originals, optionally in another Git worktree (never copy them)."""
+    original_dir = originals if originals is not None else root / "originale"
     before = file_hashes(original_dir)
     preflight = build_report(original_dir)
     report = {
@@ -77,9 +80,11 @@ def run_suite(root: Path = ROOT, *, skip_tests: bool = False) -> tuple[dict, int
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skip-tests", action="store_true", help="Nur Originaldateien pruefen")
+    parser.add_argument("--originale", type=Path, default=ROOT / "originale",
+                        help="Verzeichnis mit lokalen Originaldateien (auch aus anderem Worktree)")
     args = parser.parse_args(argv)
-    report, status = run_suite(skip_tests=args.skip_tests)
-    dest = ROOT / "originale" / "OFFLINE_PRUEFBERICHT.json"
+    report, status = run_suite(skip_tests=args.skip_tests, originals=args.originale)
+    dest = args.originale / "OFFLINE_PRUEFBERICHT.json"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print("Originale verifiziert:", report["originals_verified"])

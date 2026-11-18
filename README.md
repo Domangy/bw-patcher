@@ -149,7 +149,15 @@ poetry run python -m bwpatcher.ssm_readiness --output originale/SSM_STATUS.json
 poetry run python -m bwpatcher.mi5pro_offline_suite
 ```
 
-Unter Windows startet die Offline-Testserie Pytest mit `-p no:faulthandler`,
+Bei einem separaten Git-Worktree können die Originaldateien unverändert im
+bestehenden Projektordner bleiben. Beispiel unter Windows:
+
+```powershell
+poetry run python -m bwpatcher.mi5pro_offline_suite --originale "..\\bw-patcher\\originale"
+```
+
+Der Bericht wird im angegebenen Originalverzeichnis gespeichert; der
+Installer/Flash-Pfad bleibt gesperrt. Unter Windows startet die Offline-Testserie Pytest mit `-p no:faulthandler`,
 weil der Unicorn-2.1.4-Emulator und Python-`faulthandler` auf Windows einen
 bekannten Exception-Handler-Konflikt haben:
 https://github.com/unicorn-engine/unicorn/issues/2264

@@ -1,5 +1,6 @@
 """Tests of offline release evidence tooling, no controller or OTA writes."""
 import hashlib
+import os
 from pathlib import Path
 
 import pytest
@@ -31,10 +32,10 @@ def test_refuses_unrecognized_firmware_files(tmp_path):
 
 
 def test_identity_hashes_on_local_originals_if_available():
-    folder = ROOT / "originale"
+    folder = Path(os.environ.get("MI5PRO_FIRMWARE_DIR", str(ROOT / "originale")))
     if not all((folder / x).is_file() for x in ("mcu_0007.bin", "ble_2.7.0_0015.bin")):
         pytest.skip("Lokale Originaldateien nicht vorhanden.")
-    report, status = run_suite(ROOT, skip_tests=True)
+    report, status = run_suite(ROOT, skip_tests=True, originals=folder)
     assert status == 0
     assert report["originals_verified"] is True
     assert report["originals_unchanged"] is True
