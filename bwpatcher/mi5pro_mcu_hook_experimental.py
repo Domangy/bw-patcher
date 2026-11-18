@@ -33,9 +33,13 @@ class CompiledMcuHook:
     safe_to_flash: bool = False
 
 
-def compile_mcu_hook(original_mcu: bytes) -> CompiledMcuHook:
-    """Build native Thumb control flow for a hypothetical independent mode 4."""
+def compile_mcu_hook(
+    original_mcu: bytes, *, code_address: int = TEST_ONLY_CODE_ADDRESS,
+) -> CompiledMcuHook:
+    """Build native Thumb code for an explicit (unverified) runtime address."""
     from keystone import Ks, KS_ARCH_ARM, KS_MODE_THUMB
+    if type(code_address) is not int or code_address % 2 or not 0 <= code_address < 0x10000:
+        raise AnalysisError("Nur ausgerichtete MCU Thumb-Testadressen zugelassen.")
     if sha256(original_mcu).hexdigest() != ORIGINALS["mcu"]["sha256"]:
         raise AnalysisError("Exaktes MCU-Original erforderlich.")
     if original_mcu[HOOK_FILE_OFFSET:HOOK_FILE_OFFSET+4] != ORIGINAL_INSNS:
@@ -53,8 +57,8 @@ def compile_mcu_hook(original_mcu: bytes) -> CompiledMcuHook:
     """
     ks = Ks(KS_ARCH_ARM,KS_MODE_THUMB)
     try:
-        raw,_=ks.asm(asm,addr=TEST_ONLY_CODE_ADDRESS)
-        jump,_=ks.asm(f"bl {TEST_ONLY_CODE_ADDRESS}",addr=HOOK_RUNTIME_ADDRESS)
+        raw,_=ks.asm(asm,addr=code_address)
+        jump,_=ks.asm(f"bl {code_address}",addr=HOOK_RUNTIME_ADDRESS)
     except Exception as exc:
         raise AnalysisError(f"MCU Thumb-Assembler: {exc}") from exc
     if len(jump)!=4 or len(raw)>0x100:
