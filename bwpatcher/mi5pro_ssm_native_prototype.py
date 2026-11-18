@@ -14,7 +14,8 @@ from bwpatcher.mi5pro_emulator import OriginalAppEmulator
 from bwpatcher.mi5pro_mcu_hook_experimental import McuHookProbe
 from bwpatcher.mi5pro_research import APP_BASE, inspect_ble, AnalysisError
 from bwpatcher.mi5pro_thumb_hook_experimental import (
-    compile_hook, HOOK, TX_HOOK, CAVE, RAM_CANDIDATE,
+    compile_hook, HOOK, TX_HOOK, CLOCK_HOOK, CLOCK_CODE_OFF,
+    CLOCK_LITERAL_OFF, CAVE, RAM_CANDIDATE,
 )
 
 REGION_TEST_PREFIX = b"60556"
@@ -36,34 +37,39 @@ class BleNativeHarness:
             if (app_from_container[HOOK:HOOK + 4] != patch.branch
                     or app_from_container[TX_HOOK:TX_HOOK + 4] != patch.tx_branch
                     or app_from_container[CAVE:CAVE + len(patch.thumb) + len(patch.tx_thumb)]
-                    != patch.thumb + patch.tx_thumb):
+                    != patch.thumb + patch.tx_thumb
+                    or app_from_container[CLOCK_HOOK:CLOCK_HOOK+4]!=patch.clock_branch
+                    or app_from_container[CLOCK_CODE_OFF:CLOCK_CODE_OFF+16]!=patch.clock_thumb
+                    or app_from_container[CLOCK_LITERAL_OFF:CLOCK_LITERAL_OFF+4]
+                    != RAM_CANDIDATE.to_bytes(4,"little")):
                 raise AnalysisError("BLE-Paket enthaelt nicht die erwarteten ARM-Instruktionen.")
             self.machine.uc.mem_write(APP_BASE, app_from_container)
         else:
             self.machine.uc.mem_write(APP_BASE + HOOK, patch.branch)
             self.machine.uc.mem_write(APP_BASE + CAVE, patch.thumb + patch.tx_thumb)
             self.machine.uc.mem_write(APP_BASE + TX_HOOK, patch.tx_branch)
+            self.machine.uc.mem_write(APP_BASE + CLOCK_HOOK, patch.clock_branch)
+            self.machine.uc.mem_write(APP_BASE + CLOCK_CODE_OFF, patch.clock_thumb)
+            self.machine.uc.mem_write(
+                APP_BASE + CLOCK_LITERAL_OFF, RAM_CANDIDATE.to_bytes(4,"little")
+            )
         self.machine.uc.mem_write(
             RAM_CANDIDATE,bytes((0,0,1 if fake_eligible else 0,0,0,0,0,0,0,0))
         )
         self.machine.uc.mem_write(self.machine.INFO+1,b"\x03")
         self.machine.uc.mem_write(self.machine.INFO+0xE,b"\x01")
-        self.tick = 0
         self.oem_mode_calls = 0
         self.machine.uc.hook_add(UC_HOOK_CODE, self._on_code)
-        original_tick = self.machine.dispatch_tick
-
-        def clocked_tick(level: bool):
-            self.tick += 1
-            self.machine.uc.mem_write(
-                RAM_CANDIDATE+4,(self.tick & 0xFFFF).to_bytes(2,"little")
-            )
-            return original_tick(level)
-        self.machine.dispatch_tick = clocked_tick
+        # Native Thumb code increments the clock in the original key classifier.
+        # Python no longer writes the timing value to RAM.
 
     def _on_code(self, uc, address, size, unused):
         if address == APP_BASE + 0x80AA:
             self.oem_mode_calls += 1
+
+    @property
+    def native_clock_ticks(self) -> int:
+        return int.from_bytes(self.machine.uc.mem_read(RAM_CANDIDATE+4,2),"little")
 
     @property
     def active(self) -> bool:
