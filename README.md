@@ -157,7 +157,11 @@ poetry run python -m bwpatcher.mi5pro_offline_suite --originale "..\\bw-patcher\
 ```
 
 Der Bericht wird im angegebenen Originalverzeichnis gespeichert; der
-Installer/Flash-Pfad bleibt gesperrt. Unter Windows startet die Offline-Testserie Pytest mit `-p no:faulthandler`,
+Installer/Flash-Pfad bleibt gesperrt. Die [experimentelle BLE-Rekompression](docs/supersport/BINAERINTEGRATION_2026-11-18.md)
+prueft im Arbeitsspeicher bereits das Wiederverpacken veraenderter APP-Bytes.
+Sie erzeugt **keine flashbare Datei**; Herstellerakzeptanz und Hardwaretests fehlen.
+
+Unter Windows startet die Offline-Testserie Pytest mit `-p no:faulthandler`,
 weil der Unicorn-2.1.4-Emulator und Python-`faulthandler` auf Windows einen
 bekannten Exception-Handler-Konflikt haben:
 https://github.com/unicorn-engine/unicorn/issues/2264
