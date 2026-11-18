@@ -167,6 +167,12 @@ weiteren Doppelklick zum Deaktivieren, BLE-UART-Frames und einen
 **nur im Emulator vorhandenen** MCU-Modus-4-Reglerpfad aus.
 Der Softwarebeleg ist **keine** getestete oder installierbare Scooter-Firmware.
 
+Der [aktuelle Offline-Binärkandidat](docs/supersport/OFFLINE_FIRMWAREPAKET_2026-11-18.md)
+fasst erstmals die veränderten ARM-Thumb-Routinen in einem vollständigen
+MCU-ES32-Bytestring mit korrigierten CRC-Feldern und einem dekodierbaren
+BLE-Container zusammen. Diese Forschungsbytes werden **ausschliesslich im RAM**
+erstellt und sind weder signiert noch hardwarevalidiert. **Nicht flashen.**
+
 Unter Windows startet die Offline-Testserie Pytest mit `-p no:faulthandler`,
 weil der Unicorn-2.1.4-Emulator und Python-`faulthandler` auf Windows einen
 bekannten Exception-Handler-Konflikt haben:
