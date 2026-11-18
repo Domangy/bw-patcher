@@ -46,6 +46,15 @@ Der experimentelle BLE-Hook enthält bisher:
   (16 Bytes) und APP+`0x2c448` (4-Byte-Adressliteral) sind
   **nicht als hardwareseitig frei nachgewiesen**. Die echte
   Aufrufperiode (nominal 10 ms) ist am Scooter ungeprüft;
+  Bei der weiterführenden statischen Prüfung wurde ausserdem festgestellt,
+  dass **beide neuen Clock-Cave-Adressen innerhalb des originalen,
+  beim Systemstart in RAM kopierten Bereichs
+  [APP+0x2c118, APP+0x2c56c) liegen**. Ein dort hineingeschriebener
+  Thumb-Code ersetzt also ursprüngliche RAM-Initialisierungsdaten;
+  deren Unbenutztheit ist keineswegs bewiesen. Dies ist ein
+  **konkreter Release-Blocker**, nicht nur ein fehlender Fahrtest.
+  Weitere geprüfte Null-Lücken vor dieser Region befinden sich teils
+  in Daten-/Zeigertabellen; auch sie sind nicht ohne Weiteres Codeplatz;
 - einen Aktiv-Zustand und Deaktivierung beim nächsten Doppelklick;
 - eine native Thumb-Umleitung an der originalen UART-Sendefunktion,
   die bei aktiviertem Zustand den Modus von Sport `0x23` auf
