@@ -134,6 +134,19 @@ Die Streamlit-Oberfläche zeigt diesen Entwicklungsstand für Mi5Pro an.
 Die GUI stellt weiterhin die abstrakte Simulation dar. Die neuen Werkzeuge
 prüfen getrennt ausgewählte Originalfunktionen mit emulierter Peripherie.
 
+## Mi5Pro: lokale Freigabepruefung (ohne Flashen)
+
+Unter Windows `SSM_Status.cmd` starten oder im Repository ausfuehren:
+
+```bash
+poetry run python -m bwpatcher.ssm_readiness --output originale/SSM_STATUS.json
+```
+
+Das Werkzeug erkennt exakt die untersuchten Originaldateien MCU `0007` und
+BLE `2.7.0_0015`, prueft ihre Integritaet und dokumentiert alle weiterhin
+offenen Freigabebedingungen. Es erzeugt **keine Firmware**, schreibt nichts auf
+den Scooter und laesst das bestehende SSM-Exportverbot unveraendert.
+
 ## License
 
 Licensed under CC BY-NC-SA 4.0 (NonCommercial, ShareAlike). See [LICENSE](LICENSE) for full terms.
