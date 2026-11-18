@@ -38,6 +38,14 @@ Ein CRC-Nachweis beweist keine Hersteller-Signaturakzeptanz.
 Der experimentelle BLE-Hook enthält bisher:
 - drei getrennte OEM-Doppelklicks im Emulatorszenario (Zeitfenster 600–1600 ms
   zwischen Doppelereignissen, Gesamtabstand höchstens 4000 ms);
+- In einem weiteren experimentellen Schritt wird der 16-Bit-Zeitwert im
+  BLE-RAM durch einen zusätzlichen nativen ARM-Thumb-Hook unmittelbar
+  vor dem originalen Tastenklassifikator erhöht (APP+`0x82fc`).
+  Die Zeit wird in diesem Pfad nicht mehr durch Python gesetzt.
+  Die verwendeten Nullbyte-Codekandidaten bei APP+`0x2c42a`
+  (16 Bytes) und APP+`0x2c448` (4-Byte-Adressliteral) sind
+  **nicht als hardwareseitig frei nachgewiesen**. Die echte
+  Aufrufperiode (nominal 10 ms) ist am Scooter ungeprüft;
 - einen Aktiv-Zustand und Deaktivierung beim nächsten Doppelklick;
 - eine native Thumb-Umleitung an der originalen UART-Sendefunktion,
   die bei aktiviertem Zustand den Modus von Sport `0x23` auf
