@@ -49,10 +49,11 @@ mit dem modifizierten MCU-ES32-Bytestring – nur im Arbeitsspeicher.
 
 `tests/test_mi5pro_dual_candidate_in_memory.py` enthält zusätzliche
 End-to-End-Prüfungen für die beiden neu verpackten Komponenten.
-**Diese neuen gemeinsamen Tests konnten bei der letzten Arbeit nicht
-ausgeführt werden**, weil die Windows-Laptopverbindung abgebrochen ist.
-Die früheren Tests des ARM-Thumb-Prototyps und die vier gezielten
-MCU-Containerprüfungen wurden erfolgreich ausgeführt.
+**Die drei gemeinsamen Tests wurden nach Wiederherstellung der Laptopverbindung
+mit den echten Originaldateien erfolgreich ausgeführt.** Zusammen mit den
+vier neuen MCU-Containerprüfungen bestanden alle sieben gezielten Tests.
+Die vollständige Regressionstestsuite meldete **433 bestanden, 1 Warnung,
+0 fehlgeschlagen** (18.11.2026, Windows, Unicorn/pytest).
 
 ## Was eine echte Firmware-Freigabe weiterhin verhindert
 
@@ -91,5 +92,6 @@ poetry run python -m pytest tests/test_mi5pro_mcu_candidate_in_memory.py -q -p n
 poetry run python -m pytest tests/test_mi5pro_dual_candidate_in_memory.py -q -p no:faulthandler
 ```
 
-Die zweite Zeile ist ein **noch auszuführender** Regressionstest, keine
-bereits bestandene Hardwareprüfung.
+Beide Testzeilen sind inzwischen erfolgreich ausgeführt worden. Diese
+Offline-Ergebnisse sind ausdrücklich **keine Hardwareprüfung oder
+Freigabe für den Scooter**.
