@@ -28,6 +28,8 @@ def test_thumb_binaries_contain_actual_redirects_without_firmware_export(origina
     assert 4 == len(staged.branch)
     assert 0 < len(staged.thumb) <=125
     assert len(staged.tx_branch)==4
+    assert len(staged.clock_branch)==4
+    assert len(staged.clock_thumb)==16
     assert len(staged.thumb)+len(staged.tx_thumb)<=130
     assert len(mcu_staged.redirect)==4
     assert mcu_staged.target_raw==627
@@ -46,6 +48,7 @@ def test_three_oem_double_clicks_enter_and_single_double_exits_native(originals)
     assert [row["event"] for row in trace]==[2,2,2]
     assert [row["mode_after"] for row in trace]==[11,2,3]
     assert b.oem_mode_calls==3
+    assert b.native_clock_ticks==276  # actual ARM timer hook executed for every dispatch
     assert b.active
     active=synthetic_mcu_bridge(b,mcu)
     assert active["ble_local_mode"]==3
@@ -58,6 +61,7 @@ def test_three_oem_double_clicks_enter_and_single_double_exits_native(originals)
     assert active["uart_bridge_is_host_simulated"] is True
     assert active["safe_to_flash"] is False
     b.click_pairs(1)
+    assert b.native_clock_ticks==368
     assert not b.active
     assert b.local_oem_mode==3
     assert b.oem_mode_calls==3  # next double does not call stock mode cycle
@@ -81,6 +85,7 @@ def test_excessive_gap_prevents_activation(originals):
     b=BleNativeHarness(ble,fake_eligible=True)
     trace=b.click_pairs(3,pause_ticks=200)
     assert [item["event"] for item in trace]==[2,2,2]
+    assert b.native_clock_ticks==556
     assert not b.active
     assert b.oem_mode_calls==3
 
