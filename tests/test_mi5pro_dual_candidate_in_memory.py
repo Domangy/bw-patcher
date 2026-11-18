@@ -56,6 +56,7 @@ def test_full_pair_executes_three_double_clicks_and_exit_in_unicorn(originals, p
 
     events = b.click_pairs(3)
     assert [event["event"] for event in events] == [2, 2, 2]
+    assert b.native_clock_ticks == 276  # generated entirely by Thumb instructions
     assert b.active
     assert b.local_oem_mode == 3
     frame = b.send_controller_frame()
@@ -66,6 +67,7 @@ def test_full_pair_executes_three_double_clicks_and_exit_in_unicorn(originals, p
     assert controller.speed_selection(4) == 627
 
     b.click_pairs(1)
+    assert b.native_clock_ticks == 368
     assert not b.active
     frame = b.send_controller_frame()
     assert frame[3] == 0x23
