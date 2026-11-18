@@ -61,7 +61,11 @@ End-to-End-Prüfungen für die beiden neu verpackten Komponenten.
 mit den echten Originaldateien erfolgreich ausgeführt.** Zusammen mit den
 vier neuen MCU-Containerprüfungen bestanden alle sieben gezielten Tests.
 Die vollständige Regressionstestsuite meldete **433 bestanden, 1 Warnung,
-0 fehlgeschlagen** (18.11.2026, Windows, Unicorn/pytest).
+0 fehlgeschlagen** (18.11.2026, Windows, Unicorn/pytest). Auch nach
+Integration des neuen ARM-Thumb-Zeitzählers wurden **433/433 Tests**
+nochmals erfolgreich ausgeführt (28,05 Sekunden, 1 Capstone-Warnung).
+Die elf gezielten Tests für die nativen Gesten und die gemeinsamen
+Firmwarecontainer sind ebenfalls bestanden.
 
 ## Was eine echte Firmware-Freigabe weiterhin verhindert
 
