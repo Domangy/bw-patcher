@@ -21,14 +21,28 @@ REGION_TEST_PREFIX = b"60556"
 
 
 class BleNativeHarness:
-    def __init__(self, original_ble: bytes, *, fake_eligible: bool):
+    def __init__(
+        self, original_ble: bytes, *, fake_eligible: bool,
+        candidate_ble: bytes | None = None,
+    ):
         app = inspect_ble(original_ble).app
         patch = compile_hook(app)
         self.original_ble = original_ble
         self.machine = OriginalAppEmulator(app)
-        self.machine.uc.mem_write(APP_BASE + HOOK, patch.branch)
-        self.machine.uc.mem_write(APP_BASE + CAVE, patch.thumb + patch.tx_thumb)
-        self.machine.uc.mem_write(APP_BASE + TX_HOOK, patch.tx_branch)
+        if candidate_ble is not None:
+            # Load the whole reconstructed BLE APP, including its own SHA header.
+            # Thumb instructions must exactly match the validated assembler output.
+            app_from_container = inspect_ble(candidate_ble).app
+            if (app_from_container[HOOK:HOOK + 4] != patch.branch
+                    or app_from_container[TX_HOOK:TX_HOOK + 4] != patch.tx_branch
+                    or app_from_container[CAVE:CAVE + len(patch.thumb) + len(patch.tx_thumb)]
+                    != patch.thumb + patch.tx_thumb):
+                raise AnalysisError("BLE-Paket enthaelt nicht die erwarteten ARM-Instruktionen.")
+            self.machine.uc.mem_write(APP_BASE, app_from_container)
+        else:
+            self.machine.uc.mem_write(APP_BASE + HOOK, patch.branch)
+            self.machine.uc.mem_write(APP_BASE + CAVE, patch.thumb + patch.tx_thumb)
+            self.machine.uc.mem_write(APP_BASE + TX_HOOK, patch.tx_branch)
         self.machine.uc.mem_write(
             RAM_CANDIDATE,bytes((0,0,1 if fake_eligible else 0,0,0,0,0,0,0,0))
         )
