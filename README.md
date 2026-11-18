@@ -136,11 +136,25 @@ prüfen getrennt ausgewählte Originalfunktionen mit emulierter Peripherie.
 
 ## Mi5Pro: lokale Freigabepruefung (ohne Flashen)
 
-Unter Windows `SSM_Status.cmd` starten oder im Repository ausfuehren:
+Unter Windows `SSM_Status.cmd` fuer die Freigabeanzeige oder
+`Mi5Pro_Offline_Tests.cmd` fuer eine komplette **lesende** Firmware-Testserie
+mit beiden lokal vorhandenen Originaldateien doppelklicken.
+Die Testserie erzeugt `originale/OFFLINE_PRUEFBERICHT.json` und meldet
+explizit, ob beide Originaldateien unveraendert geblieben sind.
+
+Unter PowerShell alternativ im Repository ausfuehren:
 
 ```bash
 poetry run python -m bwpatcher.ssm_readiness --output originale/SSM_STATUS.json
+poetry run python -m bwpatcher.mi5pro_offline_suite
 ```
+
+Unter Windows startet die Offline-Testserie Pytest mit `-p no:faulthandler`,
+weil der Unicorn-2.1.4-Emulator und Python-`faulthandler` auf Windows einen
+bekannten Exception-Handler-Konflikt haben:
+https://github.com/unicorn-engine/unicorn/issues/2264
+Dies deaktiviert keine eigentlichen Tests und ist kein Beleg fuer
+Hardware-Sicherheit oder ein flashbares Image.
 
 Das Werkzeug erkennt exakt die untersuchten Originaldateien MCU `0007` und
 BLE `2.7.0_0015`, prueft ihre Integritaet und dokumentiert alle weiterhin

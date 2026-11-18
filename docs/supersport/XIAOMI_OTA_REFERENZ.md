@@ -23,8 +23,13 @@ hat den erwarteten SHA-256-Wert
 `95edba0d2d4a46405bfbb1a433b7ad4c1c72fc1787bc76eefe99a727c711bbae`.
 
 Das Cloud-OTA-Paket hat **1338 weitere Bytes** hinter dem vollständigen
-BLE-Container. Ihre Interpretation und eine eventuelle Hersteller-
-Signaturprüfung sind nicht nachgewiesen. Die separierte Datei wird nur als
+BLE-Container. Die lesende Sichtprüfung findet darin die ASCII-Modellkennung
+`xiaomi.scooter.5pro` sowie **zwei PEM-Zertifikatsabschnitte**
+(`BEGIN CERTIFICATE` / `END CERTIFICATE`). Das Format des gesamten Anhangs,
+die genaue Zuordnung zu einer Signatur und die herstellerseitige Vertrauenskette
+sind **nicht** unabhängig verifiziert. Insbesondere ist das bytegenaue
+Abtrennen für die Analyse **keine** Freigabe, den abgetrennten Container als
+vollständiges OTA-Update zu installieren. Die separierte Datei wird nur als
 **exakte Grundlage für Offline-Analysen**, nicht als vollständiges
 Hersteller-Updatepaket oder flashbare SSM-Firmware bezeichnet.
 
